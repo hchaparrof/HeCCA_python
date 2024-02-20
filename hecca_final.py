@@ -329,7 +329,7 @@ def sacar_anios(df1):
 
 '''
 """###funciones estadisticas"""
-
+'''
 
 def mad_2(datos_4):
     """
@@ -423,11 +423,7 @@ def prueba_f_serie(s1, s2, var1, var2):  # -1 ="no calcular" -2="revisar"
     return -1
   if (var2 == 0) or (var2 == -2):
     return -2
-  '''
-  x=robjects.FloatVector(s1)
-  y=robjects.FloatVector(s2)
-  return Ftest_pvalue_rpy2(x,y) #pruebaf
-  '''
+
   return var_test(s1, s2)
 
 
@@ -463,7 +459,7 @@ def anti_t_student(t_st, glib, dug):
     return inv_t_test_a(t_st, glib)
   return inv_t_test_b(t_st, glib)
 
-
+'''
 def prueba_si_cumple(sb, sa, mes, duracion, magintud):
   prub = Prueba_porc(sb, mes, True, duracion)
   prua = Prueba_porc(sa, mes, False, duracion)
@@ -1012,7 +1008,8 @@ df_qb_alt = pd.DataFrame()
 # esto es provisional
 RH = True
 RQ = True
-
+# eleccion metodología
+metod = "anla"
 
 def preparacion_inicial():
     global QTR_15, QTQ, QB, Q10
@@ -1023,7 +1020,11 @@ def preparacion_inicial():
     global data, data_alter, data_alter2, df2, data, df_prueba
     global df_qtq_ref, df_qtq_alt, df_qb_ref, df_qb_alt
     global RH, RQ
-
+    global metod
+    if metod=="anla":
+      pass
+    else:
+      from estadistica_ideam import *
     # Inicialización de variables globales
     QTR_15 = -1
     QTQ = -1
