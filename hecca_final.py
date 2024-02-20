@@ -7,7 +7,7 @@ import datetime
 # import matplotlib.pyplot as plt
 # from datetime import date as todaysDate
 from datetime import datetime as todaysDateTime
-from numpy.ma.core import empty
+# from numpy.ma.core import empty
 import scipy.stats as stats
 from sklearn.linear_model import LinearRegression
 # from sklearn.model_selection import train_test_split
@@ -18,7 +18,7 @@ from sklearn.linear_model import LinearRegression
 # import seaborn as sns
 from scipy.stats import f
 from scipy.stats import ttest_ind
-
+from limpieza_datos import process_df
 
 """##clases"""
 
@@ -69,7 +69,7 @@ class Evento_completo:
 ###funciones utilitarias: llenado de datos y esas cosas, luego ampliare esto de acuerdo a lo que halla
 """
 
-
+'''
 def datos_anomalos(df, retirar_anomalos=True):
   """ Recibe el dataframe de trabajo ordenado, con huecos y datos anomalos y devuelve el dataframe de trabajo """
   if not retirar_anomalos:
@@ -327,7 +327,7 @@ def sacar_anios(df1):
   df1 = df1[df1.index >= min_date_corr][df1[df1.index >= min_date_corr].index <= max_date_corr].copy()
   return df1
 
-
+'''
 """###funciones estadisticas"""
 
 
