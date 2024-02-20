@@ -685,6 +685,7 @@ def prin_func(crud_base, crud_apoyo=None, areas=None, umbrales=None):
   data = df_funcional
   df_rev = umbrales
   org_df2_1(df_rev)
+  df_rev = minimos(umbrales)
   for i in range(1, 13):
     org_df2_2(1, i)
   data = df_funcional.copy()
