@@ -460,6 +460,7 @@ def anti_t_student(t_st, glib, dug):
   return inv_t_test_b(t_st, glib)
 
 '''
+'''
 def prueba_si_cumple(sb, sa, mes, duracion, magintud):
   prub = Prueba_porc(sb, mes, True, duracion)
   prua = Prueba_porc(sa, mes, False, duracion)
@@ -517,7 +518,7 @@ def Prueba_porc(s1, mes, es_ref, es_duracion):
     return True
   return False
 
-
+'''
 """###funciones del algoritmo
 
 ####minimos
@@ -542,7 +543,7 @@ def caudal_ambiental(cuenca_base, cuenca_comparacion=None, areas=None):
   return a
 
 
-def minimos(umbrales=None):
+def minimos(umbrales: object = None) -> object:
   """
     calcula los umbrales QTR 15, QTQ, QB y Q10, además del minimo revisado por año.
 
@@ -685,7 +686,8 @@ def prin_func(crud_base, crud_apoyo=None, areas=None, umbrales=None):
   data = df_funcional
   df_rev = umbrales
   org_df2_1(df_rev)
-  df_rev = minimos(umbrales)
+  if (umbrales == None):
+    df_rev = minimos(umbrales)
   for i in range(1, 13):
     org_df2_2(1, i)
   data = df_funcional.copy()
@@ -779,7 +781,7 @@ def formar_alter():
   data_alter2 = data_alter[['Q_ambiental']].copy()
   data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
 
-
+'''
 def calibrar_mes(mess):
   inferior = 0
   superior = 1
@@ -814,7 +816,7 @@ def calibrar_mes(mess):
       org_alt()
       return
 
-
+'''
 def org_df2_2(aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
   """recibe un valor porcentual (aprov) y un valor entero (mes) y cambia el valor de aprovechamiento de ese mes ademas de cambiar el caudal aprovechado para ese mes"""
   global df2
