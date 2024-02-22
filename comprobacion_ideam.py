@@ -1,4 +1,6 @@
 from estadistica_ideam import *
+from estado_algoritmo import EstadoIdeam
+from funciones_ideam import *
 def prueba_si_cumple(sb, sa, mes, duracion, magintud):
   prub = Prueba_porc(sb, mes, True, duracion)
   prua = Prueba_porc(sa, mes, False, duracion)
@@ -34,7 +36,9 @@ def cumple(dfb, dfa, mes):  # dfb =ref dfa = alterada
 # s1 serie de eventos, mes, mes, es_ref <- ref o no, es_duracion <- duracion o no
 
 
-def Prueba_porc(s1, mes, es_ref, es_duracion):
+def Prueba_porc(estado: EstadoIdeam,s1, mes, es_ref, es_duracion):
+  data = estado.data
+  df2 = estado.df2
   num_anos = 0
   maxs = data.index.year.max()
   mins = data.index.year.min()

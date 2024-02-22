@@ -94,11 +94,6 @@ def prueba_f_serie(s1, s2, var1, var2):  # -1 ="no calcular" -2="revisar"
     return -1
   if (var2 == 0) or (var2 == -2):
     return -2
-  '''
-  x=robjects.FloatVector(s1)
-  y=robjects.FloatVector(s2)
-  return Ftest_pvalue_rpy2(x,y) #pruebaf
-  '''
   return var_test(s1, s2)
 
 

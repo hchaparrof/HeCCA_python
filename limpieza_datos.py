@@ -134,7 +134,7 @@ def process_df(df_base, df_apoyo=None, areas: tuple = None):
     df_base_2, df_apoyo_2 = fill_na_values(df_base, df_apoyo)
     X = df_apoyo_2.values.reshape(-1, 1)
     Y = df_base_2.values
-    model = LinearRegression().fit(X, Y)
+    model: LinearRegression = LinearRegression().fit(X, Y)
     slope = model.coef_[0]
     intercept = model.intercept_
     new_series = slope * df_apoyo + intercept
