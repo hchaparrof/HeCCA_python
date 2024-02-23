@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import f
 from scipy.stats import ttest_ind
 import scipy.stats as stats
+
+
 def mad_2(datos_4):
   """
   Calcula la desviación absoluta media (MAD) de una serie de datos.

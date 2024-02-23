@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime as todaysDateTime
 from sklearn.linear_model import LinearRegression
+
+
 def datos_anomalos(df, retirar_anomalos=True):
   """ Recibe el dataframe de trabajo ordenado, con huecos y datos anomalos y devuelve el dataframe de trabajo """
   if not retirar_anomalos:
@@ -144,6 +146,7 @@ def process_df(df_base, df_apoyo=None, areas: tuple = None):
   df_return = sacar_anios(df_base)
   if areas is not None:
     df_return = df_return*area1
+  df_return.rename(columns={'Valor': 'cuenca-base'}, inplace=True)
   return df_return
 
 

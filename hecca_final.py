@@ -667,53 +667,53 @@ def minimos(umbrales: object = None) -> object:
 """####funcion principal"""
 
 
-def prin_func(crud_base, crud_apoyo=None, areas=None, umbrales=None):
-  preparacion_inicial()
-  global QTR_15
-  global data_alter2
-  global QB
-  global QTQ
-  global Q10
-  global df_qtq_ref
-  global df_qtq_alt
-  global df_qb_ref
-  global df_qb_alt
-  global data
-  global df2
-  global primer_dia
-  global dif
-  global final_dia
-  df_funcional = process_df(crud_base, crud_apoyo, areas)
-  df_funcional = df_funcional.rename(columns={'Valor': 'cuenca-base'})
-  data = df_funcional
-  df_rev = umbrales
-  org_df2_1(df_rev)
-  if (umbrales == None):
-    df_rev = buscar_umbrales(umbrales)
-  for i in range(1, 13):
-    org_df2_2(1, i)
-  data = df_funcional.copy()
-  primer_dia = data.index.min()
-  final_dia = data.index.max()
-  segundo_dia = data[data.index > data.index.min()].index.min()
-  dif = segundo_dia-primer_dia
-  nombrar_evento(data, 'cuenca-base')
-  contar_eventos(data, 'event_QTR15', eventos_qtr15, 'event_QTR15', QTR_15)
-  contar_eventos(data, 'event_QB', eventos_qb, 'event_QTR15', QB)
-  contar_eventos(data, 'event_QTQ', eventos_qtq, 'event_Q10', QTQ)
-  contar_eventos(data, 'event_Q10', eventos_q10, 'event_Q10', Q10)
-  df_qtq_ref = df_eventos(df_qtq_ref, eventos_qtq)
-  df_qb_ref = df_eventos(df_qb_ref, eventos_qb)
-  formar_alter()
-  org_alt()
-  '''for j in range (0,1):
-    for i in range(12,0,-1):
-      print(i)
-      calibrar_mes(i)'''
-  for i in range(1, 13):
-      print(i)
-      calibrar_mes(i)
-  return df2, data_alter2
+# def prin_func(crud_base, crud_apoyo=None, areas=None, umbrales=None):
+#   preparacion_inicial()
+#   global QTR_15
+#   global data_alter2
+#   global QB
+#   global QTQ
+#   global Q10
+#   global df_qtq_ref
+#   global df_qtq_alt
+#   global df_qb_ref
+#   global df_qb_alt
+#   global data
+#   global df2
+#   global primer_dia
+#   global dif
+#   global final_dia
+#   df_funcional = process_df(crud_base, crud_apoyo, areas)
+#   df_funcional = df_funcional.rename(columns={'Valor': 'cuenca-base'})
+#   data = df_funcional
+#   df_rev = umbrales
+#   org_df2_1(estado, df_rev)
+#   if (umbrales == None):
+#     df_rev = buscar_umbrales(umbrales)
+#   for i in range(1, 13):
+#     org_df2_2(estado,1, i)
+#   data = df_funcional.copy()
+#   primer_dia = data.index.min()
+#   final_dia = data.index.max()
+#   segundo_dia = data[data.index > data.index.min()].index.min()
+#   dif = segundo_dia-primer_dia
+#   nombrar_evento(data, 'cuenca-base')
+#   contar_eventos(data, 'event_QTR15', eventos_qtr15, 'event_QTR15', QTR_15)
+#   contar_eventos(data, 'event_QB', eventos_qb, 'event_QTR15', QB)
+#   contar_eventos(data, 'event_QTQ', eventos_qtq, 'event_Q10', QTQ)
+#   contar_eventos(data, 'event_Q10', eventos_q10, 'event_Q10', Q10)
+#   df_qtq_ref = df_eventos(df_qtq_ref, eventos_qtq)
+#   df_qb_ref = df_eventos(df_qb_ref, eventos_qb)
+#   formar_alter()
+#   org_alt()
+#   '''for j in range (0,1):
+#     for i in range(12,0,-1):
+#       print(i)
+#       calibrar_mes(i)'''
+#   for i in range(1, 13):
+#       print(i)
+#       calibrar_mes(i)
+#   return df2, data_alter2
 
 
 """####otra cosa"""

@@ -1,9 +1,11 @@
 from estadistica_ideam import *
 from estado_algoritmo import EstadoIdeam
 from funciones_ideam import *
-def prueba_si_cumple(sb, sa, mes, duracion, magintud):
-  prub = Prueba_porc(sb, mes, True, duracion)
-  prua = Prueba_porc(sa, mes, False, duracion)
+
+
+def prueba_si_cumple(estado: EstadoIdeam, sb, sa, mes, duracion, magintud):
+  prub = Prueba_porc(estado, sb, mes, True, duracion)
+  prua = Prueba_porc(estado, sa, mes, False, duracion)
   mean_base = promedio_serie(sb, prub)
   mean_alt = promedio_serie(sa, prua)
   var_base = varianza_serie(sb, prub, magintud, False)
@@ -22,21 +24,21 @@ def prueba_si_cumple(sb, sa, mes, duracion, magintud):
   return abs(anti_tst) < abs(valor_confianza)
 
 
-def cumple(dfb, dfa, mes):  # dfb =ref dfa = alterada
+def cumple(estado: EstadoIdeam, dfb, dfa, mes):  # dfb =ref dfa = alterada
   sb = dfb['Magnitud'][dfb['mes'] == mes]
   sa = dfa['Magnitud'][dfa['mes'] == mes]
-  boola = prueba_si_cumple(sb, sa, mes, False, True)
+  boola = prueba_si_cumple(estado, sb, sa, mes, False, True)
   sb = dfb['Duracion'][dfb['mes'] == mes]
   sa = dfa['Duracion'][dfa['mes'] == mes]
-  boolb = prueba_si_cumple(sb, sa, mes, True, False)
+  boolb = prueba_si_cumple(estado, sb, sa, mes, True, False)
   sb = dfb['Intensidad'][dfb['mes'] == mes]
   sa = dfa['Intensidad'][dfa['mes'] == mes]
-  boolc = prueba_si_cumple(sb, sa, mes, False, False)
+  boolc = prueba_si_cumple(estado, sb, sa, mes, False, False)
   return (boola and boolb) & boolc
 # s1 serie de eventos, mes, mes, es_ref <- ref o no, es_duracion <- duracion o no
 
 
-def Prueba_porc(estado: EstadoIdeam,s1, mes, es_ref, es_duracion):
+def Prueba_porc(estado: EstadoIdeam, s1, mes, es_ref, es_duracion):
   data = estado.data
   df2 = estado.df2
   num_anos = 0
@@ -59,24 +61,30 @@ def Prueba_porc(estado: EstadoIdeam,s1, mes, es_ref, es_duracion):
   if (s1.size > 1) and (not (s1.mean() == 1)):
     return True
   return False
-def calibrar_mes(mess):
+
+
+def calibrar_mes(estado: EstadoIdeam, mess):
+  df_qtq_ref = estado.df_umbrales['df_qtq_ref']
+  df_qtq_alt = estado.df_umbrales['df_qtq_alt']
+  df_qb_ref = estado.df_umbrales['df_qb_ref']
+  df_qb_alt = estado.df_umbrales['df_qb_alt']
   inferior = 0
   superior = 1
-  org_df2_2(1, mess)
-  formar_alter()
-  org_alt()
+  org_df2_2(estado, 1, mess)
+  formar_alter(estado)
+  org_alt(estado)
   i = mess
-  if cumple(df_qtq_ref, df_qtq_alt, i) and cumple(df_qb_ref, df_qb_alt, i):
+  if cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i):
     return
   conteo = 0
   mayor = 0
   while True:
     conteo += 1
     lim_prov = (inferior+superior)/2
-    org_df2_2(lim_prov, mess)
-    formar_alter()
-    org_alt()
-    a = cumple(df_qtq_ref, df_qtq_alt, i) and cumple(df_qb_ref, df_qb_alt, i)
+    org_df2_2(estado, lim_prov, mess)
+    formar_alter(estado)
+    org_alt(estado)
+    a = cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i)
     # respaldo_print(a,"a",lim_prov)
     if a:
       if lim_prov > mayor:
@@ -88,7 +96,7 @@ def calibrar_mes(mess):
     else:
       superior = lim_prov
     if conteo > 2000:
-      org_df2_2(mayor, mess)
-      formar_alter()
-      org_alt()
+      org_df2_2(estado, mayor, mess)
+      formar_alter(estado)
+      org_alt(estado)
       return

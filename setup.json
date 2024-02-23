@@ -1,0 +1,13 @@
+{
+  "archivos": {
+    "archivo_base": "/ruta/archivo_base.ext",
+    "archivo_apoyo": "/ruta/archivo_apoyo.ext"
+  },
+  "existencia_archivo_apoyo": true,
+  "existencia_areas": true,
+  "areas": [10.5, 20.3],
+  "existencia_umbrales": true,
+  "umbrales": [30.0, 40.0],
+  "estacion_hidrologica": "Nombre_de_la_estacion",
+  "organismo": "anla"
+}
