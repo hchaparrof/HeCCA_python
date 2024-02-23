@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """##librerias"""
+import ingreso_datos
 import pandas as pd
 import numpy as np
 from funciones_ideam import buscar_umbrales
@@ -30,6 +31,11 @@ from scipy.stats import ttest_ind
 from limpieza_datos import process_df
 from comprobacion_ideam import calibrar_mes
 
+
+
+if __name__ == '__main__':
+    instancia_algoritmo: EstadoAlgoritmo = ingreso_datos.iniciar_algoritmo()
+    instancia_algoritmo.principal_funcion()
 """##clases"""
 
 
@@ -542,15 +548,15 @@ def listas(dataframe):
     return lista_aprov, lista_q_aprov
 
 
-def listas_ambiental(cuenca_base, cuenca_comparacion=None, areas=None):
-  a = prin_func(cuenca_base, cuenca_comparacion, areas)
-  b = listas(a)
-  return b
-
-
-def caudal_ambiental(cuenca_base, cuenca_comparacion=None, areas=None):
-  a = prin_func(cuenca_base, cuenca_comparacion, areas)
-  return a
+# def listas_ambiental(cuenca_base, cuenca_comparacion=None, areas=None):
+#   a = prin_func(cuenca_base, cuenca_comparacion, areas)
+#   b = listas(a)
+#   return b
+#
+#
+# def caudal_ambiental(cuenca_base, cuenca_comparacion=None, areas=None):
+#   a = prin_func(cuenca_base, cuenca_comparacion, areas)
+#   return a
 
 '''
 def minimos(umbrales: object = None) -> object:
@@ -965,108 +971,108 @@ QTQ = -1
 QB = -1
 Q10 = -1
 '''
-print(QTR_15)
-print(QTQ)
-print(QB)
-print(Q10)
+# print(QTR_15)
+# print(QTQ)
+# print(QB)
+# print(Q10)
 
 """###Provisionales"""
 
-primer_dia = 1.0
-dif = 1.0
-final_dia = 1.0
-
-# DF_minimos_mensual = pd.DataFrame()
-
-porcentajes = np.empty(12)
-
-"""###listas de eventos"""
-
-# natural
-eventos_qtr15 = []
-eventos_qb = []
-eventos_qtq = []
-eventos_q10 = []
-
-# alterada
-eventos_rev_qtr15 = []
-eventos_rev_qb = []
-eventos_rev_qtq = []
-eventos_rev_q10 = []
-
-"""###dataframes utiles"""
-
-# data es el dataframe donde va a estar
-data = pd.DataFrame()
-data_alter = pd.DataFrame()
-data_alter2 = pd.DataFrame()
-# df2 dataframe con el resultado
-df2 = pd.DataFrame()
-df_prueba = 2
-
-# dataframes con los eventos qtq y qb
-df_qtq_ref = pd.DataFrame()
-df_qtq_alt = pd.DataFrame()
-df_qb_ref = pd.DataFrame()
-df_qb_alt = pd.DataFrame()
-
-# esto es provisional
-RH = True
-RQ = True
-# eleccion metodología
-metod = "anla"
-
-def preparacion_inicial():
-    # global QTR_15, QTQ, QB, Q10
-    global primer_dia, dif, final_dia
-    global porcentajes  # ,DF_minimos_mensual
-    global eventos_qtr15, eventos_qb, eventos_qtq, eventos_q10
-    global eventos_rev_qtr15, eventos_rev_qb, eventos_rev_qtq, eventos_rev_q10
-    global data, data_alter, data_alter2, df2, data, df_prueba
-    global df_qtq_ref, df_qtq_alt, df_qb_ref, df_qb_alt
-    global RH, RQ
-    global metod
-    if metod=="anla":
-      pass
-    else:
-      from estadistica_ideam import *
-    # Inicialización de variables globales
-    '''QTR_15 = -1
-    QTQ = -1
-    QB = -1
-    Q10 = -1
-    '''
-    primer_dia = 1.0
-    dif = 1.0
-    final_dia = 1.0
-
-    # DF_minimos_mensual = pd.DataFrame()
-
-    porcentajes = np.empty(12)
-
-    # Inicialización de listas de eventos
-    eventos_qtr15 = []
-    eventos_qb = []
-    eventos_qtq = []
-    eventos_q10 = []
-
-    eventos_rev_qtr15 = []
-    eventos_rev_qb = []
-    eventos_rev_qtq = []
-    eventos_rev_q10 = []
-
-    # Inicialización de dataframes útiles
-    data = pd.DataFrame()
-    data_alter = pd.DataFrame()
-    data_alter2 = pd.DataFrame()
-    df2 = pd.DataFrame()
-    data = pd.DataFrame()
-    df_prueba = 2
-
-    df_qtq_ref = pd.DataFrame()
-    df_qtq_alt = pd.DataFrame()
-    df_qb_ref = pd.DataFrame()
-    df_qb_alt = pd.DataFrame()
-
-    RH = True
-    RQ = True
+# primer_dia = 1.0
+# dif = 1.0
+# final_dia = 1.0
+#
+# # DF_minimos_mensual = pd.DataFrame()
+#
+# porcentajes = np.empty(12)
+#
+# """###listas de eventos"""
+#
+# # natural
+# eventos_qtr15 = []
+# eventos_qb = []
+# eventos_qtq = []
+# eventos_q10 = []
+#
+# # alterada
+# eventos_rev_qtr15 = []
+# eventos_rev_qb = []
+# eventos_rev_qtq = []
+# eventos_rev_q10 = []
+#
+# """###dataframes utiles"""
+#
+# # data es el dataframe donde va a estar
+# data = pd.DataFrame()
+# data_alter = pd.DataFrame()
+# data_alter2 = pd.DataFrame()
+# # df2 dataframe con el resultado
+# df2 = pd.DataFrame()
+# df_prueba = 2
+#
+# # dataframes con los eventos qtq y qb
+# df_qtq_ref = pd.DataFrame()
+# df_qtq_alt = pd.DataFrame()
+# df_qb_ref = pd.DataFrame()
+# df_qb_alt = pd.DataFrame()
+#
+# # esto es provisional
+# RH = True
+# RQ = True
+# # eleccion metodología
+# metod = "anla"
+#
+# def preparacion_inicial():
+#     # global QTR_15, QTQ, QB, Q10
+#     global primer_dia, dif, final_dia
+#     global porcentajes  # ,DF_minimos_mensual
+#     global eventos_qtr15, eventos_qb, eventos_qtq, eventos_q10
+#     global eventos_rev_qtr15, eventos_rev_qb, eventos_rev_qtq, eventos_rev_q10
+#     global data, data_alter, data_alter2, df2, data, df_prueba
+#     global df_qtq_ref, df_qtq_alt, df_qb_ref, df_qb_alt
+#     global RH, RQ
+#     global metod
+#     if metod=="anla":
+#       pass
+#     else:
+#       from estadistica_ideam import *
+#     # Inicialización de variables globales
+#     '''QTR_15 = -1
+#     QTQ = -1
+#     QB = -1
+#     Q10 = -1
+#     '''
+#     primer_dia = 1.0
+#     dif = 1.0
+#     final_dia = 1.0
+#
+#     # DF_minimos_mensual = pd.DataFrame()
+#
+#     porcentajes = np.empty(12)
+#
+#     # Inicialización de listas de eventos
+#     eventos_qtr15 = []
+#     eventos_qb = []
+#     eventos_qtq = []
+#     eventos_q10 = []
+#
+#     eventos_rev_qtr15 = []
+#     eventos_rev_qb = []
+#     eventos_rev_qtq = []
+#     eventos_rev_q10 = []
+#
+#     # Inicialización de dataframes útiles
+#     data = pd.DataFrame()
+#     data_alter = pd.DataFrame()
+#     data_alter2 = pd.DataFrame()
+#     df2 = pd.DataFrame()
+#     data = pd.DataFrame()
+#     df_prueba = 2
+#
+#     df_qtq_ref = pd.DataFrame()
+#     df_qtq_alt = pd.DataFrame()
+#     df_qb_ref = pd.DataFrame()
+#     df_qb_alt = pd.DataFrame()
+#
+#     RH = True
+#     RQ = True
