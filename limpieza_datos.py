@@ -124,14 +124,13 @@ def process_df(df_base, df_apoyo=None, areas: tuple = None):
     pandas.DataFrame
         El DataFrame df_base procesado con los valores NaN reemplazados, si es posible.
     """
-  area1, area2 = areas
   if df_apoyo is not None:
     df_base, df_apoyo = organize_df(df_base, df_apoyo)
   else:
     df_base = organize_df(df_base)
   if areas is not None:
-    df_base = df_base / area1
-    df_apoyo = df_apoyo / area2
+    df_base = df_base / areas[0]
+    df_apoyo = df_apoyo / areas[1]
   if df_apoyo is not None:
     df_base_2, df_apoyo_2 = fill_na_values(df_base, df_apoyo)
     X = df_apoyo_2.values.reshape(-1, 1)
@@ -145,7 +144,7 @@ def process_df(df_base, df_apoyo=None, areas: tuple = None):
   df_base = fill_data_na(df_base)
   df_return = sacar_anios(df_base)
   if areas is not None:
-    df_return = df_return*area1
+    df_return = df_return*areas[0]
   df_return.rename(columns={'Valor': 'cuenca-base'}, inplace=True)
   return df_return
 

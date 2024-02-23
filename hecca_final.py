@@ -25,7 +25,7 @@ from sklearn.linear_model import LinearRegression
 # import statsmodels.api as sm
 # import statsmodels.formula.api as smf
 # import seaborn as sns
-from estado_algoritmo import EstadoAlgoritmo
+from estado_algoritmo import *
 from scipy.stats import f
 from scipy.stats import ttest_ind
 from limpieza_datos import process_df
