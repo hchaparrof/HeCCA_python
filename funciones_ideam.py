@@ -269,37 +269,68 @@ def formar_alter(estado: EstadoIdeam):
   # global data_alter2
   # global df2
   # global data
+
   data_alter = data[['cuenca-base']].copy()
+  # print(data_alter.index, estado.data.index)
   data_alter['Aprov_teo'] = np.NaN
   data_alter['check_3'] = np.NaN
   data_alter['check_2'] = np.NaN
   data_alter['Q_ajustado'] = np.NaN
   data_alter['Q_ambiental'] = np.NaN
   data_alter['Q_aprov_real'] = np.NaN
+  #print(data_alter.index.month, "iiiiiiiiiiiiiiiiii")
   for i in range(1, 13):
+    # print(estado.data.index.dtype, " iiiiiii ", data_alter.index.dtype)
+    print(i, "hahahahahah")
+    print(data_alter.index.month == 1, " iiiiiiiiiiiiiii")
     a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
-    data_alter['Aprov_teo'].loc[a_bool] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
-    data_alter['check_3'].loc[a_bool] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
+    data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
+    data_alter.loc[a_bool, 'check_3'] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
     b_bool = data_alter['cuenca-base'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
     c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
     d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
     e_bool = data_alter['cuenca-base'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
     f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
     g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
-    data_alter['Q_ajustado'].loc[c_bool] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
-    data_alter['Q_ajustado'].loc[f_bool] = 0  # Q obs < aprov teorico = 0 #########
-    data_alter['Q_ajustado'].loc[g_bool] = data_alter['cuenca-base'][g_bool] - data_alter['check_3'][g_bool]  # #######
+    data_alter.loc[c_bool,'Q_ajustado'] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
+    data_alter.loc[f_bool, 'Q_ajustado'] = 0  # Q obs < aprov teorico = 0 #########
+    data_alter.loc[g_bool, 'Q_ajustado'] = data_alter['cuenca-base'][g_bool] - data_alter['check_3'][g_bool]  # #######
     data_alter['check_2'] = data_alter['cuenca-base'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
   a_bool = data_alter['cuenca-base'] < data_alter['check_3']  # los caudales observados que sean menores al minimo revisado
   b_bool = data_alter['check_2'] < data_alter['check_3']  # Q ajustado es menor al minimo revisado
-  data_alter['Q_ambiental'].loc[a_bool] = data_alter['cuenca-base']  # los queQobs sean < al minrev no se le hace nada
-  data_alter['Q_ambiental'].loc[(~a_bool) & b_bool] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
-  data_alter['Q_ambiental'].loc[(~a_bool) & (~b_bool)] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
+  data_alter.loc[a_bool, 'Q_ambiental'] = data_alter['cuenca-base']  # los queQobs sean < al minrev no se le hace nada
+  data_alter.loc[(~a_bool) & b_bool, 'Q_ambiental'] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
+  data_alter.loc[(~a_bool) & (~b_bool), 'Q_ambiental'] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
   data_alter['Q_aprov_real'] = data_alter['cuenca-base'] - data_alter['Q_ambiental']  # qobs -qambs
   data_alter2 = data_alter[['Q_ambiental']].copy()
   data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
   estado.data_alter = data_alter
   estado.data_alter2 = data_alter2
+
+  # for i in range(1, 13):
+  #   a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
+  #   data_alter['Aprov_teo'].loc[a_bool] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
+  #   data_alter['check_3'].loc[a_bool] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
+  #   b_bool = data_alter['cuenca-base'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
+  #   c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
+  #   d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
+  #   e_bool = data_alter['cuenca-base'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
+  #   f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
+  #   g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
+  #   data_alter['Q_ajustado'].loc[c_bool] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
+  #   data_alter['Q_ajustado'].loc[f_bool] = 0  # Q obs < aprov teorico = 0 #########
+  #   data_alter['Q_ajustado'].loc[g_bool] = data_alter['cuenca-base'][g_bool] - data_alter['check_3'][g_bool]  # #######
+  #   data_alter['check_2'] = data_alter['cuenca-base'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
+  # a_bool = data_alter['cuenca-base'] < data_alter['check_3']  # los caudales observados que sean menores al minimo revisado
+  # b_bool = data_alter['check_2'] < data_alter['check_3']  # Q ajustado es menor al minimo revisado
+  # data_alter['Q_ambiental'].loc[a_bool] = data_alter['cuenca-base']  # los queQobs sean < al minrev no se le hace nada
+  # data_alter['Q_ambiental'].loc[(~a_bool) & b_bool] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
+  # data_alter['Q_ambiental'].loc[(~a_bool) & (~b_bool)] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
+  # data_alter['Q_aprov_real'] = data_alter['cuenca-base'] - data_alter['Q_ambiental']  # qobs -qambs
+  # data_alter2 = data_alter[['Q_ambiental']].copy()
+  # data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
+  # estado.data_alter = data_alter
+  # estado.data_alter2 = data_alter2
 
 
 def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
