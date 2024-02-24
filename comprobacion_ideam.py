@@ -1,9 +1,11 @@
+import pandas as pd
+
 from estadistica_ideam import *
 from estado_algoritmo import EstadoIdeam
 from funciones_ideam import *
 
 
-def prueba_si_cumple(estado: EstadoIdeam, sb, sa, mes, duracion, magintud):
+def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int, duracion, magintud):
   prub = Prueba_porc(estado, sb, mes, True, duracion)
   prua = Prueba_porc(estado, sa, mes, False, duracion)
   mean_base = promedio_serie(sb, prub)
@@ -85,13 +87,11 @@ def calibrar_mes(estado: EstadoIdeam, mess):
     formar_alter(estado)
     org_alt(estado)
     a = cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i)
-    # respaldo_print(a,"a",lim_prov)
     if a:
       if lim_prov > mayor:
         mayor = lim_prov
       inferior = lim_prov
       if abs(inferior-superior) < 0.01:
-        # respaldo_print(cumple(df_qtq_ref,df_qtq_alt,i), cumple(df_qb_ref,df_qb_alt,i),lim_prov,i)
         return
     else:
       superior = lim_prov

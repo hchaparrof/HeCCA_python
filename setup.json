@@ -1,13 +1,15 @@
 {
   "archivos": {
-    "archivo_base": "/ruta/archivo_base.ext",
-    "archivo_apoyo": "/ruta/archivo_apoyo.ext"
+    "archivo_base": "C:/Users/ASUS/Desktop/datos/unal/semillero/repo_hecca/est_25027400.csv",
+    "archivo_apoyo": "/ruta/archivo_apoyo.csv",
+    "archivo_enso": "/ruta/tabla_enso.csv"
   },
-  "existencia_archivo_apoyo": true,
-  "existencia_areas": true,
+  "existencia_archivo_apoyo": false,
+  "existencia_areas": false,
   "areas": [10.5, 20.3],
-  "existencia_umbrales": true,
+  "existencia_umbrales": false,
   "umbrales": [30.0, 40.0],
   "estacion_hidrologica": "Nombre_de_la_estacion",
-  "organismo": "anla"
+  "organismo": "ideam",
+  "existencia_enso": false
 }

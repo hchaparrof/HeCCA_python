@@ -5,7 +5,7 @@ from datetime import datetime as todaysDateTime
 from sklearn.linear_model import LinearRegression
 
 
-def datos_anomalos(df, retirar_anomalos=True):
+def datos_anomalos(df: pd.DataFrame, retirar_anomalos: bool = True) -> pd.DataFrame:
   """ Recibe el dataframe de trabajo ordenado, con huecos y datos anomalos y devuelve el dataframe de trabajo """
   if not retirar_anomalos:
     return df
@@ -25,7 +25,7 @@ def datos_anomalos(df, retirar_anomalos=True):
   return df
 
 
-def fecha_cruda(df1):
+def fecha_cruda(df1: pd.DataFrame) -> (bool, float, float, float, float):
   """
   Toma un pd.DataFrame y devuelve las fechas utilizables, porcentaje de datos faltantes, años totales y si es funcional
   Parametros:
@@ -47,7 +47,7 @@ def fecha_cruda(df1):
     return False, 0, 0, 0, 0
 
 
-def verificar_columnas(dataframe):
+def verificar_columnas(dataframe: pd.DataFrame) -> bool:
   """
   Determina si el dataframe recibido cuenta con las columnas 'Fecha' y 'Valor'
   parámetros:
@@ -59,7 +59,7 @@ def verificar_columnas(dataframe):
   return {'Valor', 'Fecha'}.issubset(set(dataframe.columns))
 
 
-def prim_ult(df1):
+def prim_ult(df1: pd.DataFrame) -> (int, int, int):
   """
   Recibe un dataframe y devuelve primer año completo, ultimo año completo y la cantidad de años completos entre ellas
   parámetros:
@@ -87,7 +87,7 @@ def prim_ult(df1):
 # Función para resumir la información de los datos faltantes
 
 
-def summarize_missing_values(complete_data):
+def summarize_missing_values(complete_data: pd.DataFrame) -> float:
   """
   resume información de los datos faltantes, recibe un dataframe y retorna el porcentaje de datos faltante
   parámetros:
@@ -106,7 +106,7 @@ def summarize_missing_values(complete_data):
 """Llenado completo"""
 
 
-def process_df(df_base, df_apoyo=None, areas: tuple = None):
+def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tuple = None) -> pd.DataFrame:
   """
     Procesa un DataFrame con o sin un DataFrame de apoyo para llenar los valores NaN en el primer DataFrame.
 
@@ -149,7 +149,7 @@ def process_df(df_base, df_apoyo=None, areas: tuple = None):
   return df_return
 
 
-def organize_df(df_base, df_apoyo=None):
+def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.DataFrame, pd.DataFrame):
   """
     Esta función recibe dos DataFrames, uno obligatorio `df_base` y otro opcional `df_apoyo`.
     La función convierte la columna 'Fecha' en tipo datetime y
@@ -166,7 +166,7 @@ def organize_df(df_base, df_apoyo=None):
     base -- el DataFrame `df_base` reindexado (si `df_apoyo` es None)
     """
   base = df_base[['Fecha', 'Valor']].copy()
-  base['Fecha'] = pd.to_datetime(base['Fecha'], dayfirst=True)
+  base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
   size = base['Fecha'].size
   # days = pd.date_range(base.at[0,'Fecha'], base.at[size-1,'Fecha'])
   days = pd.date_range(base.iloc[0]['Fecha'], base.iloc[-1]['Fecha'])
@@ -183,7 +183,7 @@ def organize_df(df_base, df_apoyo=None):
     return base
 
 
-def fill_na_values(df_base, df_apoyo):
+def fill_na_values(df_base: pd.DataFrame, df_apoyo: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
   """
     Elimina las filas en dos DataFrames donde al menos un valor es NaN.
 
@@ -207,7 +207,7 @@ def fill_na_values(df_base, df_apoyo):
   return df_base, df_apoyo
 
 
-def fill_data_na(data):
+def fill_data_na(data: pd.DataFrame) -> pd.DataFrame:
   """
     Completa los valores faltantes en el DataFrame `data` utilizando el promedio del día y mes correspondiente.
 
@@ -222,7 +222,7 @@ def fill_data_na(data):
   complete_data_day_month = data.groupby(by=[data.index.day, data.index.month])
   complete_data_day_month_description = complete_data_day_month.describe()
 
-  def fill_caudal_day(row):
+  def fill_caudal_day(row: pd.tseries) -> float:
     """
     Función auxiliar que completa un valor faltante en la columna 'Valor' en el DataFrame `data`.
 
@@ -242,7 +242,7 @@ def fill_data_na(data):
   return data
 
 
-def sacar_anios(df1):
+def sacar_anios(df1: pd.DataFrame) -> pd.DataFrame:
   """
     Función que recorta un DataFrame `df1` indexado con fechas,
     eliminando el año correspondiente a la primera y última fechas.

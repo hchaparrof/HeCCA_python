@@ -1,41 +1,42 @@
 # -*- coding: utf-8 -*-
 """##librerias"""
 import ingreso_datos
-import pandas as pd
-import numpy as np
-from funciones_ideam import buscar_umbrales
-from funciones_ideam import df_eventos
-from funciones_ideam import nombrar_evento
-from funciones_ideam import contar_eventos
-from funciones_ideam import org_df2_1
-from funciones_ideam import org_df2_2
-from funciones_ideam import formar_alter
-from funciones_ideam import org_alt
-from funciones_ideam import crear_evento
-import datetime
-# import matplotlib.pyplot as plt
-# from datetime import date as todaysDate
-from datetime import datetime as todaysDateTime
-# from numpy.ma.core import empty
-import scipy.stats as stats
-from sklearn.linear_model import LinearRegression
-# from sklearn.model_selection import train_test_split
-# from sklearn.metrics import r2_score
-# from sklearn.metrics import mean_squared_error
-# import statsmodels.api as sm
-# import statsmodels.formula.api as smf
-# import seaborn as sns
 from estado_algoritmo import *
-from scipy.stats import f
-from scipy.stats import ttest_ind
-from limpieza_datos import process_df
-from comprobacion_ideam import calibrar_mes
-
 
 
 if __name__ == '__main__':
     instancia_algoritmo: EstadoAlgoritmo = ingreso_datos.iniciar_algoritmo()
     instancia_algoritmo.principal_funcion()
+# import pandas as pd
+# import numpy as np
+# from funciones_ideam import buscar_umbrales
+# from funciones_ideam import df_eventos
+# from funciones_ideam import nombrar_evento
+# from funciones_ideam import contar_eventos
+# from funciones_ideam import org_df2_1
+# from funciones_ideam import org_df2_2
+# from funciones_ideam import formar_alter
+# from funciones_ideam import org_alt
+# from funciones_ideam import crear_evento
+# import datetime
+# # import matplotlib.pyplot as plt
+# # from datetime import date as todaysDate
+# from datetime import datetime as todaysDateTime
+# # from numpy.ma.core import empty
+# import scipy.stats as stats
+# from sklearn.linear_model import LinearRegression
+# # from sklearn.model_selection import train_test_split
+# # from sklearn.metrics import r2_score
+# # from sklearn.metrics import mean_squared_error
+# # import statsmodels.api as sm
+# # import statsmodels.formula.api as smf
+# # import seaborn as sns
+# from scipy.stats import f
+# from scipy.stats import ttest_ind
+# from limpieza_datos import process_df
+# from comprobacion_ideam import calibrar_mes
+
+
 """##clases"""
 
 

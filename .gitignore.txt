@@ -1,0 +1,5 @@
+# Ignorar archivos generados por IDEs
+.idea/
+
+# Ignorar todos los archivos CSV
+*.csv
