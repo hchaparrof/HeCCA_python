@@ -265,13 +265,7 @@ def formar_alter(estado: EstadoIdeam):
   data_alter2 = estado.data_alter2
   df2 = estado.df2
   data = estado.data
-  # global data_alter
-  # global data_alter2
-  # global df2
-  # global data
-
   data_alter = data[['cuenca-base']].copy()
-  # print(data_alter.index, estado.data.index)
   data_alter['Aprov_teo'] = np.NaN
   data_alter['check_3'] = np.NaN
   data_alter['check_2'] = np.NaN
@@ -281,8 +275,8 @@ def formar_alter(estado: EstadoIdeam):
   #print(data_alter.index.month, "iiiiiiiiiiiiiiiiii")
   for i in range(1, 13):
     # print(estado.data.index.dtype, " iiiiiii ", data_alter.index.dtype)
-    print(i, "hahahahahah")
-    print(data_alter.index.month == 1, " iiiiiiiiiiiiiii")
+    # print(i, "hahahahahah")
+    # print(data_alter.index.month == 1, " iiiiiiiiiiiiiii")
     a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
     data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
     data_alter.loc[a_bool, 'check_3'] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
@@ -306,31 +300,6 @@ def formar_alter(estado: EstadoIdeam):
   data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
   estado.data_alter = data_alter
   estado.data_alter2 = data_alter2
-
-  # for i in range(1, 13):
-  #   a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
-  #   data_alter['Aprov_teo'].loc[a_bool] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
-  #   data_alter['check_3'].loc[a_bool] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
-  #   b_bool = data_alter['cuenca-base'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
-  #   c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
-  #   d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
-  #   e_bool = data_alter['cuenca-base'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
-  #   f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
-  #   g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
-  #   data_alter['Q_ajustado'].loc[c_bool] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
-  #   data_alter['Q_ajustado'].loc[f_bool] = 0  # Q obs < aprov teorico = 0 #########
-  #   data_alter['Q_ajustado'].loc[g_bool] = data_alter['cuenca-base'][g_bool] - data_alter['check_3'][g_bool]  # #######
-  #   data_alter['check_2'] = data_alter['cuenca-base'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
-  # a_bool = data_alter['cuenca-base'] < data_alter['check_3']  # los caudales observados que sean menores al minimo revisado
-  # b_bool = data_alter['check_2'] < data_alter['check_3']  # Q ajustado es menor al minimo revisado
-  # data_alter['Q_ambiental'].loc[a_bool] = data_alter['cuenca-base']  # los queQobs sean < al minrev no se le hace nada
-  # data_alter['Q_ambiental'].loc[(~a_bool) & b_bool] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
-  # data_alter['Q_ambiental'].loc[(~a_bool) & (~b_bool)] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
-  # data_alter['Q_aprov_real'] = data_alter['cuenca-base'] - data_alter['Q_ambiental']  # qobs -qambs
-  # data_alter2 = data_alter[['Q_ambiental']].copy()
-  # data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
-  # estado.data_alter = data_alter
-  # estado.data_alter2 = data_alter2
 
 
 def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
@@ -362,30 +331,27 @@ def org_df2_1(estado: EstadoIdeam, df):
   df2 = df2.set_index('Fecha')
   estado.df2 = df2
 
+def numeros_naturales():
+  n = 1
+  while True:
+    yield n
+    n += 1
+
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
-  # preparacion_inicial()
-  # global QTR_15
-  # global data_alter2
-  # global QB
-  # global QTQ
-  # global Q10
-  # global df_qtq_ref
-  # global df_qtq_alt
-  # global df_qb_ref
-  # global df_qb_alt
-  # global data
-  # global df2
-  # global primer_dia
-  # global dif
-  # global final_dia
+  generador = numeros_naturales()
+  print(next(generador), "aaa")
   data = estado.data
+  print(next(generador), "aaa")
   df_rev = buscar_umbrales(estado)
+  print(next(generador), "aaa")
   org_df2_1(estado, df_rev)
+  print(next(generador), "aaa")
   if (estado.h_umbrales == None):
     df_rev = buscar_umbrales(estado)
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
+  print(next(generador), "aaa")
   # data = df_funcional.copy()
   primer_dia = data.index.min()
   estado.primer_dia = primer_dia
@@ -395,22 +361,29 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   segundo_dia = data[data.index > data.index.min()].index.min()
   dif = segundo_dia - primer_dia
   estado.dif = dif
+  print(next(generador), "aaa")
   nombrar_evento(estado, data, 'cuenca-base')
+  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QTR15', estado.listas_eventos['eventos_qtr15'], 'event_QTR15', estado.umbrales['QTR15'])
+  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QB', estado.listas_eventos['eventos_qb'], 'event_QTR15', estado.umbrales['QB'])
+  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QTQ', estado.listas_eventos['eventos_qtq'], 'event_Q10', estado.umbrales['QTQ'])
+  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_Q10', estado.listas_eventos['eventos_q10'], 'event_Q10', estado.umbrales['Q10'])
+  print(next(generador), "aaa")
   estado.df_umbrales['df_qtq_ref'] = df_eventos(estado.df_umbrales['df_qtq_ref'], estado.listas_eventos['eventos_qtq'])
+  print(next(generador), "aaa")
   estado.df_umbrales['df_qb_ref'] = df_eventos(estado.df_umbrales['df_qb_ref'], estado.listas_eventos['eventos_qb'])
+  print(next(generador), "aaa")
   formar_alter(estado)
+  print(next(generador), "aaa")
   org_alt(estado)
-  '''for j in range (0,1):
-    for i in range(12,0,-1):
-      print(i)
-      calibrar_mes(i)'''
+  print(next(generador), "aaa")
   for i in range(1, 13):
-    print(i, "iiiiiiiiii")
-    calibrar_mes(estado,i)
+    print(i, "iiiiiiiiii", "MES")
+    calibrar_mes(estado, i)
+  print(next(generador), "aaa")
   return estado.df2, estado.data_alter2
 
 
@@ -477,6 +450,8 @@ def Prueba_porc(estado: EstadoIdeam, s1, mes, es_ref, es_duracion):
 
 
 def calibrar_mes(estado: EstadoIdeam, mess):
+  generador_2 = numeros_naturales()
+  print(next(generador_2), "aaa", "calibrar_mes")
   df_qtq_ref = estado.df_umbrales['df_qtq_ref']
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_ref = estado.df_umbrales['df_qb_ref']
@@ -484,11 +459,15 @@ def calibrar_mes(estado: EstadoIdeam, mess):
   inferior = 0
   superior = 1
   org_df2_2(estado, 1, mess)
+  print(next(generador_2), "aaa", "calibrar_mes")
   formar_alter(estado)
+  print(next(generador_2), "aaa", "calibrar_mes")
   org_alt(estado)
+  print(next(generador_2), "aaa", "calibrar_mes")
   i = mess
   if cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i):
     return
+  print(next(generador_2), "aaa", "calibrar_mes")
   conteo = 0
   mayor = 0
   while True:
@@ -498,10 +477,12 @@ def calibrar_mes(estado: EstadoIdeam, mess):
     formar_alter(estado)
     org_alt(estado)
     a = cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i)
+    print(next(generador_2), "aaa", "calibrar_mes")
     if a:
       if lim_prov > mayor:
         mayor = lim_prov
       inferior = lim_prov
+      print(inferior-superior)
       if abs(inferior-superior) < 0.01:
         return
     else:

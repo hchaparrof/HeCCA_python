@@ -18,7 +18,7 @@ def iniciar_algoritmo() -> estado_algoritmo.EstadoAlgoritmo:
       apoyo = pd.read_csv(datos['archivo_apoyo'])
     df_limpio = process_df(base, apoyo, areas)
     if datos['organismo'] == 'anla':
-      return estado_algoritmo.EstadoAlgoritmo(df_limpio, datos['archivos']['archivo_base'])
+      return estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'])
     else:
       if datos['existencia_umbrales']:
         return estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base'], datos['umbrales'])

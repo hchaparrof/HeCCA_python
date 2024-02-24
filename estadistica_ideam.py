@@ -118,7 +118,6 @@ def prueba_t_serie(s1, s2, pruebaf, grados_lib):  # -2000000 = "revisar" -100000
     equal_var = False
   else:
     equal_var = True
-  # s1=
   return ttest_pvalue_scipy(s1, s2, equal_var)
 
 
