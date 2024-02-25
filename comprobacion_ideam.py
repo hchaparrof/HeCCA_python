@@ -6,8 +6,8 @@ from funciones_ideam import *
 
 
 def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int, duracion, magintud):
-  prub = Prueba_porc(estado, sb, mes, True, duracion)
-  prua = Prueba_porc(estado, sa, mes, False, duracion)
+  prub = prueba_porc(estado, sb, mes, True, duracion)
+  prua = prueba_porc(estado, sa, mes, False, duracion)
   mean_base = promedio_serie(sb, prub)
   mean_alt = promedio_serie(sa, prua)
   var_base = varianza_serie(sb, prub, magintud, False)

@@ -1,5 +1,7 @@
+import string
+
 import pandas as pd
-# import numpy as np
+#import numpy as np
 from evento_completo import EventoCompleto
 from estado_algoritmo import EstadoIdeam
 # from comprobacion_ideam import calibrar_mes
@@ -189,8 +191,13 @@ def crear_evento(estado: EstadoIdeam, df21):
   return lista_po
 
 
-def contar_eventos(estado: EstadoIdeam, df21, eventosh, eventos_umbral, eventosi, umbral_caudal):
-  """recibe un dataframe (df21) con los 1's ya puestos, un string (eventosh) con el tipo de evento, una lista (eventos_umbral), otros string (eventosi) que es el evento umbral mayor, en caso de ser un evento medio y un flotante (umbral_caudal)con el valor del umbral, rellena las listas de eventos con bloques de eventos donde hayan 1's juntos, para formar eventos completos, en el caso de evento QB y QTQ también verifica que no hallan eventos QTR15 o Q10 inmediatamente anterior o siguiente al bloque"""
+def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: string,
+                   eventos_umbral: list, eventosi: string, umbral_caudal: float):
+  """recibe un dataframe (df21) con los 1's ya puestos, un string (eventosh) con el tipo de evento, una lista
+  (eventos_umbral), otros string (eventosi) que es el evento umbral mayor, en caso de ser un evento medio y
+   un flotante (umbral_caudal)con el valor del umbral, rellena las listas de eventos con bloques de eventos
+   donde hayan 1's juntos, para formar eventos completos, en el caso de evento QB y QTQ también verifica que no
+    hallan eventos QTR15 o Q10 inmediatamente anterior o siguiente al bloque"""
   data = estado.data
   df2 = estado.df2
   primer_dia = estado.primer_dia
@@ -229,6 +236,7 @@ def contar_eventos(estado: EstadoIdeam, df21, eventosh, eventos_umbral, eventosi
 
 
 def org_alt(estado: EstadoIdeam):
+  estado.reiniciar_alter()
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_alt = estado.df_umbrales['df_qb_alt']
   eventos_rev_qtr15 = estado.listas_eventos['eventos_rev_qtr15']
@@ -249,11 +257,15 @@ def org_alt(estado: EstadoIdeam):
   eventos_rev_qb.clear()
   eventos_rev_qtq.clear()
   eventos_rev_q10.clear()
-  nombrar_evento(estado, data_alter2, 'cuenca-base')
-  contar_eventos(estado, data_alter2, 'event_QTR15', eventos_rev_qtr15, 'event_QTR15', QTR_15)
-  contar_eventos(estado, data_alter2, 'event_QB', eventos_rev_qb, 'event_QTR15', QB)
-  contar_eventos(estado, data_alter2, 'event_QTQ', eventos_rev_qtq, 'event_Q10', QTQ)
-  contar_eventos(estado, data_alter2, 'event_Q10', eventos_rev_q10, 'event_Q10', Q10)
+  nombrar_evento(estado, estado.data_alter2, 'cuenca-base')
+  contar_eventos(estado, estado.data_alter2, 'event_QTR15', eventos_rev_qtr15, 'event_QTR15', QTR_15)
+  estado.listas_eventos['eventos_rev_qtr15'] = eventos_rev_qtr15
+  contar_eventos(estado, estado.data_alter2, 'event_QB', eventos_rev_qb, 'event_QTR15', QB)
+  estado.listas_eventos['eventos_rev_qb'] = eventos_rev_qb
+  contar_eventos(estado, estado.data_alter2, 'event_QTQ', eventos_rev_qtq, 'event_Q10', QTQ)
+  estado.listas_eventos['eventos_rev_qtq'] = eventos_rev_qtq
+  contar_eventos(estado, estado.data_alter2, 'event_Q10', eventos_rev_q10, 'event_Q10', Q10)
+  estado.listas_eventos['eventos_rev_q10'] = eventos_rev_q10
   df_qtq_alt = df_eventos(df_qtq_alt, eventos_rev_qtq)
   df_qb_alt = df_eventos(df_qb_alt, eventos_rev_qb)
   estado.df_umbrales['df_qtq_alt'] = df_qtq_alt
@@ -361,37 +373,26 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   segundo_dia = data[data.index > data.index.min()].index.min()
   dif = segundo_dia - primer_dia
   estado.dif = dif
-  print(next(generador), "aaa")
   nombrar_evento(estado, data, 'cuenca-base')
-  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QTR15', estado.listas_eventos['eventos_qtr15'], 'event_QTR15', estado.umbrales['QTR15'])
-  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QB', estado.listas_eventos['eventos_qb'], 'event_QTR15', estado.umbrales['QB'])
-  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_QTQ', estado.listas_eventos['eventos_qtq'], 'event_Q10', estado.umbrales['QTQ'])
-  print(next(generador), "aaa")
   contar_eventos(estado, data, 'event_Q10', estado.listas_eventos['eventos_q10'], 'event_Q10', estado.umbrales['Q10'])
-  print(next(generador), "aaa")
   estado.df_umbrales['df_qtq_ref'] = df_eventos(estado.df_umbrales['df_qtq_ref'], estado.listas_eventos['eventos_qtq'])
-  print(next(generador), "aaa")
   estado.df_umbrales['df_qb_ref'] = df_eventos(estado.df_umbrales['df_qb_ref'], estado.listas_eventos['eventos_qb'])
-  print(next(generador), "aaa")
   formar_alter(estado)
-  print(next(generador), "aaa")
   org_alt(estado)
-  print(next(generador), "aaa")
+  #print(cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i))
   for i in range(1, 13):
-    print(i, "iiiiiiiiii", "MES")
     calibrar_mes(estado, i)
-  print(next(generador), "aaa")
   return estado.df2, estado.data_alter2
-
-
+# cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], 1) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], 1)
+# org_df2_2(estado, 1, 1)
 
 
 def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int, duracion, magintud):
-  prub = Prueba_porc(estado, sb, mes, True, duracion)
-  prua = Prueba_porc(estado, sa, mes, False, duracion)
+  prub = prueba_porc(estado, sb, mes, True, duracion)
+  prua = prueba_porc(estado, sa, mes, False, duracion)
   mean_base = promedio_serie(sb, prub)
   mean_alt = promedio_serie(sa, prua)
   var_base = varianza_serie(sb, prub, magintud, False)
@@ -410,7 +411,7 @@ def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int
   return abs(anti_tst) < abs(valor_confianza)
 
 
-def cumple(estado: EstadoIdeam, dfb, dfa, mes):  # dfb =ref dfa = alterada
+def cumple(estado: EstadoIdeam, dfb:pd.DataFrame, dfa:pd.DataFrame, mes:int) -> bool:  # dfb =ref dfa = alterada
   sb = dfb['Magnitud'][dfb['mes'] == mes]
   sa = dfa['Magnitud'][dfa['mes'] == mes]
   boola = prueba_si_cumple(estado, sb, sa, mes, False, True)
@@ -424,7 +425,7 @@ def cumple(estado: EstadoIdeam, dfb, dfa, mes):  # dfb =ref dfa = alterada
 # s1 serie de eventos, mes, mes, es_ref <- ref o no, es_duracion <- duracion o no
 
 
-def Prueba_porc(estado: EstadoIdeam, s1, mes, es_ref, es_duracion):
+def prueba_porc(estado: EstadoIdeam, s1: pd.Series, mes: int, es_ref: bool, es_duracion: bool) -> bool:
   data = estado.data
   df2 = estado.df2
   num_anos = 0
@@ -472,12 +473,14 @@ def calibrar_mes(estado: EstadoIdeam, mess):
   mayor = 0
   while True:
     conteo += 1
+    print(conteo, "iiiiiiiiiikakakak")
     lim_prov = (inferior+superior)/2
     org_df2_2(estado, lim_prov, mess)
     formar_alter(estado)
     org_alt(estado)
-    a = cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i)
-    print(next(generador_2), "aaa", "calibrar_mes")
+    a = cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i)
+    print(conteo, "iiiiiiiii", lim_prov, a)
+    # print(next(generador_2), "aaa", "calibrar_mes")
     if a:
       if lim_prov > mayor:
         mayor = lim_prov

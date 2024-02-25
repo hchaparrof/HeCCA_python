@@ -27,7 +27,7 @@ class EstadoAlgoritmo:
 
 
 class EstadoIdeam(EstadoAlgoritmo):
-  def __init__(self, data_inicial, ruta_m: string, h_umbrales=(None,None)):
+  def __init__(self, data_inicial, ruta_m: string, h_umbrales=(None, None)):
     super().__init__(data_inicial, ruta_m)
     self.data_alter = pd.DataFrame()
     self.data_alter2 = pd.DataFrame()
@@ -58,8 +58,9 @@ class EstadoIdeam(EstadoAlgoritmo):
       'QTQ': h_umbrales[1]
     }
     self.porcentajes = np.empty(12)
-    def to_csv():
-      self.data.to_csv()
+
+  def to_csv(self):
+    self.data.to_csv()
 
   def principal_funcion(self):
     from funciones_ideam import prin_func
@@ -70,7 +71,15 @@ class EstadoIdeam(EstadoAlgoritmo):
     self.umbrales['QB'] = f_umbrales[1]
     self.umbrales['QTQ'] = f_umbrales[2]
     self.umbrales['Q10'] = f_umbrales[3]
-
+  def reiniciar_alter(self):
+    self.df_umbrales['df_qtq_alt'] = pd.DataFrame()
+    self.df_umbrales['df_qb_alt'] = pd.DataFrame()
+    self.df_umbrales['df_qtq_alt'].assign(mes=None, Magnitud=None, Duracion=None, Intensidad=None)
+    self.df_umbrales['df_qb_alt'].assign(mes=None, Magnitud=None, Duracion=None, Intensidad=None)
+    self.listas_eventos['eventos_rev_qtr15'].clear()
+    self.listas_eventos['eventos_rev_qb'].clear()
+    self.listas_eventos['eventos_rev_qtq'].clear()
+    self.listas_eventos['eventos_rev_q10'].clear()
 
 class EstadoAnla(EstadoAlgoritmo):
   def __init__(self, data_inicial, ruta_m: string):
