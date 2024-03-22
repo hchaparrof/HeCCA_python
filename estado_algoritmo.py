@@ -1,10 +1,9 @@
-import string
 import numpy as np
 import pandas as pd
 
 
 class EstadoAlgoritmo:
-  def __init__(self, data_inicial, ruta_m: string):
+  def __init__(self, data_inicial, ruta_m: str):
     self.ruta = ruta_m
     self.data = data_inicial
     self.data_alter = pd.DataFrame()
@@ -17,17 +16,18 @@ class EstadoAlgoritmo:
     pass
 
   def to_csv(self):
-    def modificar_nombre_archivo(nombre_archivo: string) -> string:
+    def modificar_nombre_archivo(nombre_archivo: str) -> str:
       # Dividir el nombre del archivo y su extensión
       nombre, extension = nombre_archivo.rsplit('.', 1)
       # Añadir "_arreglado" al nombre del archivo
       nuevo_nombre = nombre + "_arreglado." + extension
       return nuevo_nombre
+    print("hola")
     self.df2.to_csv(modificar_nombre_archivo(self.ruta))
 
 
 class EstadoIdeam(EstadoAlgoritmo):
-  def __init__(self, data_inicial, ruta_m: string, h_umbrales=(None, None)):
+  def __init__(self, data_inicial, ruta_m: str, h_umbrales=(None, None)):
     super().__init__(data_inicial, ruta_m)
     self.data_alter = pd.DataFrame()
     self.data_alter2 = pd.DataFrame()
@@ -59,18 +59,17 @@ class EstadoIdeam(EstadoAlgoritmo):
     }
     self.porcentajes = np.empty(12)
 
-  def to_csv(self):
-    self.data.to_csv()
-
   def principal_funcion(self):
     from funciones_ideam import prin_func
     prin_func(self)
+    self.to_csv()
 
   def setear_umbrales(self, f_umbrales: list):
     self.umbrales['QTR15'] = f_umbrales[0]
     self.umbrales['QB'] = f_umbrales[1]
     self.umbrales['QTQ'] = f_umbrales[2]
     self.umbrales['Q10'] = f_umbrales[3]
+
   def reiniciar_alter(self):
     self.df_umbrales['df_qtq_alt'] = pd.DataFrame()
     self.df_umbrales['df_qb_alt'] = pd.DataFrame()
@@ -81,8 +80,9 @@ class EstadoIdeam(EstadoAlgoritmo):
     self.listas_eventos['eventos_rev_qtq'].clear()
     self.listas_eventos['eventos_rev_q10'].clear()
 
+
 class EstadoAnla(EstadoAlgoritmo):
-  def __init__(self, data_inicial, ruta_m: string):
+  def __init__(self, data_inicial, ruta_m: str):
     super().__init__(data_inicial, ruta_m)
     self.primera_iteracion = None
     self.q95 = None
@@ -91,3 +91,4 @@ class EstadoAnla(EstadoAlgoritmo):
   def principal_funcion(self):
     from funciones_anla import prin_func
     prin_func(self)
+    self.to_csv()

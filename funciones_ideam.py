@@ -1,10 +1,6 @@
-import string
-
 import pandas as pd
-#import numpy as np
 from evento_completo import EventoCompleto
 from estado_algoritmo import EstadoIdeam
-# from comprobacion_ideam import calibrar_mes
 from estadistica_ideam import *
 
 
@@ -191,8 +187,8 @@ def crear_evento(estado: EstadoIdeam, df21):
   return lista_po
 
 
-def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: string,
-                   eventos_umbral: list, eventosi: string, umbral_caudal: float):
+def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: str,
+                   eventos_umbral: list, eventosi: str, umbral_caudal: float):
   """recibe un dataframe (df21) con los 1's ya puestos, un string (eventosh) con el tipo de evento, una lista
   (eventos_umbral), otros string (eventosi) que es el evento umbral mayor, en caso de ser un evento medio y
    un flotante (umbral_caudal)con el valor del umbral, rellena las listas de eventos con bloques de eventos
@@ -352,23 +348,17 @@ def numeros_naturales():
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   generador = numeros_naturales()
-  print(next(generador), "aaa")
   data = estado.data
-  print(next(generador), "aaa")
   df_rev = buscar_umbrales(estado)
-  print(next(generador), "aaa")
   org_df2_1(estado, df_rev)
-  print(next(generador), "aaa")
   if (estado.h_umbrales == None):
     df_rev = buscar_umbrales(estado)
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
-  print(next(generador), "aaa")
   # data = df_funcional.copy()
   primer_dia = data.index.min()
   estado.primer_dia = primer_dia
   estado.final_dia = estado.data.index.max()
-  # print("hola a todos ", primer_dia, type(primer_dia))
   final_dia = data.index.max()
   segundo_dia = data[data.index > data.index.min()].index.min()
   dif = segundo_dia - primer_dia
@@ -384,6 +374,7 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   org_alt(estado)
   #print(cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i))
   for i in range(1, 13):
+    print(f"empezando el {i} mes")
     calibrar_mes(estado, i)
   return estado.df2, estado.data_alter2
 # cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], 1) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], 1)
@@ -452,7 +443,6 @@ def prueba_porc(estado: EstadoIdeam, s1: pd.Series, mes: int, es_ref: bool, es_d
 
 def calibrar_mes(estado: EstadoIdeam, mess):
   generador_2 = numeros_naturales()
-  print(next(generador_2), "aaa", "calibrar_mes")
   df_qtq_ref = estado.df_umbrales['df_qtq_ref']
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_ref = estado.df_umbrales['df_qb_ref']
@@ -460,32 +450,25 @@ def calibrar_mes(estado: EstadoIdeam, mess):
   inferior = 0
   superior = 1
   org_df2_2(estado, 1, mess)
-  print(next(generador_2), "aaa", "calibrar_mes")
   formar_alter(estado)
-  print(next(generador_2), "aaa", "calibrar_mes")
   org_alt(estado)
-  print(next(generador_2), "aaa", "calibrar_mes")
   i = mess
   if cumple(estado, df_qtq_ref, df_qtq_alt, i) and cumple(estado, df_qb_ref, df_qb_alt, i):
     return
-  print(next(generador_2), "aaa", "calibrar_mes")
   conteo = 0
   mayor = 0
   while True:
     conteo += 1
-    print(conteo, "iiiiiiiiiikakakak")
     lim_prov = (inferior+superior)/2
     org_df2_2(estado, lim_prov, mess)
     formar_alter(estado)
     org_alt(estado)
     a = cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i)
-    print(conteo, "iiiiiiiii", lim_prov, a)
     # print(next(generador_2), "aaa", "calibrar_mes")
     if a:
       if lim_prov > mayor:
         mayor = lim_prov
       inferior = lim_prov
-      print(inferior-superior)
       if abs(inferior-superior) < 0.01:
         return
     else:

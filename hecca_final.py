@@ -5,8 +5,9 @@ from estado_algoritmo import *
 
 
 def main():
-    instancia_algoritmo: EstadoAlgoritmo = ingreso_datos.iniciar_algoritmo()
-    instancia_algoritmo.principal_funcion()
+  instancia_algoritmo: EstadoAlgoritmo = ingreso_datos.generar_algoritmo_json()
+  instancia_algoritmo.principal_funcion()
+
 
 if __name__ == '__main__':
-    main()
+  main()
