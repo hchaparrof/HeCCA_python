@@ -347,7 +347,7 @@ def numeros_naturales():
 
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
-  generador = numeros_naturales()
+  #generador = numeros_naturales()
   data = estado.data
   df_rev = buscar_umbrales(estado)
   org_df2_1(estado, df_rev)
