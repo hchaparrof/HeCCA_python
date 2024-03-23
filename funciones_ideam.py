@@ -118,7 +118,10 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
 
 
 def df_eventos(df_objetivo, lista_eventos):
-  """función toma un dataframe donde guardar las cosas y una lista con todos los eventos de la categoria que se le den y lo que hace es crear un dataframe con los datos de mes magnitud, etc. para luego poder acceder a ellos más fácil"""
+  """función toma un dataframe donde guardar las cosas y una lista con todos
+  los eventos de la categoria que se le den y lo que hace es crear un dataframe
+  con los datos de mes magnitud, etc. para luego poder acceder a ellos más fácil
+  """
   # set columns
   df_objetivo = df_objetivo.assign(mes=None, Magnitud=None, Intensidad=None, Duracion=None)
   # calculate mim, max, mean, min_rev and mean_rev
@@ -130,9 +133,11 @@ def df_eventos(df_objetivo, lista_eventos):
 
 
 def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='cuenca-base'):
-  """funcion que coge un dataframe con datos de caudal y determina que días hubo eventos poniendo 1 o 0 donde sea necesario
+  """funcion que coge un dataframe con datos de caudal y determina
+  que días hubo eventos poniendo 1 o 0 donde sea necesario
   Parameters
   -----------
+  estado: instancia del algoritmo en el que se esta trabajando
   dfh: dataframe al que se le van a encontrar los eventos
   str4_h: string con el valor 'cuenca-base' se necesita, aunque no se porque
   Return
