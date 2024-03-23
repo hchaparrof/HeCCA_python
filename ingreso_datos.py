@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import estado_algoritmo
 from limpieza_datos import process_df
+import copy
 
 
 def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo]:
@@ -26,7 +27,7 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo]:
       else:
         objeto_base = estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base'])
     if datos["existencia_enso"]:
-      return crear_lista(objeto_base, datos["archivo_enso"])
+      return crear_lista(objeto_base, datos['archivos']['archivo_enso'])  # datos["archivo_enso"])
     return [objeto_base]
 
 
@@ -56,17 +57,27 @@ def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple
 
 
 def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso: str) -> list[estado_algoritmo.EstadoAlgoritmo]:
+  estado_normal = copy.deepcopy(estado)
+  estado_ninio = copy.deepcopy(estado)
+  estado_ninia = copy.deepcopy(estado)
   datos_csv = estado.data
   with open(enso, 'r') as file:
     # Leer el contenido del archivo CSV
-    datos = file.read()
-  nino_set = set(datos['niño'])
-  nina_set = set(datos['niña'])
+    datos_enso = json.load(file)
+    #datos_enso = file.read()
+  nino_set = set(datos_enso['ninio'])
+  nina_set = set(datos_enso['ninia'])
   datos_nino = datos_csv[datos_csv.index.year.isin(nino_set)].copy()
   datos_nina = datos_csv[datos_csv.index.year.isin(nina_set)].copy()
-  if datos['normal'] == -1:
+  if datos_enso['normal'] == -1:
     datos_normal = datos_csv[~(datos_csv.index.year.isin(nino_set) & datos_csv.index.year.isin(nina_set))].copy()
   else:
-    normal_set = nina_set = set(datos['normal'])
+    normal_set = set(datos_enso['normal'])
     datos_normal = datos_csv[datos_csv.index.year.isin(normal_set)].copy()
-  return [datos_nino, datos_nina, datos_normal]
+  estado_normal.data = datos_normal
+  estado_normal.str_apoyo = "normal"
+  estado_ninio.data = datos_nino
+  estado_ninio.str_apoyo = "ninio"
+  estado_ninia.data = datos_nina
+  estado_ninia.str_apoyo = "ninia"
+  return [estado_normal, estado_ninia, estado_ninio]

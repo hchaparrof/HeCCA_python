@@ -2,7 +2,7 @@
   "archivos": {
     "archivo_base": "C:/Users/ASUS/Desktop/datos/unal/semillero/repo_hecca/est_25027400.csv",
     "archivo_apoyo": "/ruta/archivo_apoyo.csv",
-    "archivo_enso": "/ruta/tabla_enso.csv"
+    "archivo_enso": "C:\\Users\\ASUS\\Desktop\\datos\\unal\\semillero\\repo_hecca\\enso.json"
   },
   "existencia_archivo_apoyo": false,
   "existencia_areas": false,
@@ -11,5 +11,5 @@
   "umbrales": [30.0, 40.0],
   "estacion_hidrologica": "Nombre_de_la_estacion",
   "organismo": "ideam",
-  "existencia_enso": false
+  "existencia_enso": true
 }

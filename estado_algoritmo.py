@@ -11,6 +11,7 @@ class EstadoAlgoritmo:
     self.primer_dia = 1
     self.dif = 1
     self.final_dia = 1
+    self.str_apoyo = ""
 
   def principal_funcion(self):
     pass
@@ -20,8 +21,9 @@ class EstadoAlgoritmo:
       # Dividir el nombre del archivo y su extensión
       nombre, extension = nombre_archivo.rsplit('.', 1)
       # Añadir "_arreglado" al nombre del archivo
-      nuevo_nombre = nombre + "_arreglado." + extension
+      nuevo_nombre = nombre + "_arreglado_" + self.str_apoyo + "." + extension
       return nuevo_nombre
+
     print("hola")
     self.df2.to_csv(modificar_nombre_archivo(self.ruta))
 
