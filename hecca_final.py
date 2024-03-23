@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """##librerias"""
 import ingreso_datos
-from estado_algoritmo import *
+import estado_algoritmo
 
 
 def main():
-  instancia_algoritmo: EstadoAlgoritmo = ingreso_datos.generar_algoritmo_json()
-  instancia_algoritmo.principal_funcion()
+  instancia_algoritmo: list[estado_algoritmo.EstadoAlgoritmo] = ingreso_datos.generar_algoritmo_json()
+  for estado in instancia_algoritmo:
+    estado.principal_funcion()
 
 
 if __name__ == '__main__':
