@@ -67,13 +67,13 @@ def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso: str) -> list[est
     #datos_enso = file.read()
   nino_set = set(datos_enso['ninio'])
   nina_set = set(datos_enso['ninia'])
-  datos_nino = datos_csv[datos_csv.index.year.isin(nino_set)].copy()
-  datos_nina = datos_csv[datos_csv.index.year.isin(nina_set)].copy()
+  datos_nino = estado_ninio.data[estado_ninio.data.index.year.isin(nino_set)].copy()
+  datos_nina = estado_ninia.data[estado_ninia.data.index.year.isin(nina_set)].copy()
   if datos_enso['normal'] == -1:
-    datos_normal = datos_csv[~(datos_csv.index.year.isin(nino_set) & datos_csv.index.year.isin(nina_set))].copy()
+    datos_normal = estado_normal.data[~(estado_normal.data.index.year.isin(nino_set) | estado_normal.data.index.year.isin(nina_set))].copy()
   else:
     normal_set = set(datos_enso['normal'])
-    datos_normal = datos_csv[datos_csv.index.year.isin(normal_set)].copy()
+    datos_normal = estado_normal.data[estado_normal.data.index.year.isin(normal_set)].copy()
   estado_normal.data = datos_normal
   estado_normal.str_apoyo = "normal"
   estado_ninio.data = datos_nino

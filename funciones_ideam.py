@@ -20,6 +20,7 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
       los umbrales se guardan en las variables globales
     """
   data = estado.data
+  # print(data)
   if estado.h_umbrales['QB'] is None:
     u_qb = 2.33
     u_qtq = 2
@@ -31,26 +32,23 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None)
   # se crea un dataframe en donde se calculan los minimos máximos y promedio por mes y año
-  for i in range(data.index.min().year, data.index.max().year + 1):
-    for j in range(1, 13):
-      # filtro los datos por año y mes para hacer el analisis
-      data_filter = data[data.index.year == i][data[data.index.year == i].index.month == j]
-      row = [str(i) + str(-j), data_filter['cuenca-base'].min(), data_filter['cuenca-base'].max(),
-             data_filter['cuenca-base'].mean()]
-      df.loc[len(df)] = row
+  grouped = data.groupby([data.index.year, data.index.month])
+  for group, data_filter in grouped:
+    year, month = group
+    row = [f"{year}-{month}", data_filter['cuenca-base'].min(), data_filter['cuenca-base'].max(),
+           data_filter['cuenca-base'].mean()]
+    df.loc[len(df)] = row
   # data view
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
   '''
   se crea listas con n valores, siendo n el número de años en el dataset, guardando el máximo y minimo por año
   '''
-  mins = []
-  maxs = []
-  for i in range(df.index.min().year, df.index.max().year + 1):
-    mins.append(df[df.index.year == i]['Min'].min())
-    maxs.append(df[df.index.year == i]['Max'].max())
+  mins = df.groupby(df.index.year)['Min'].min()
+  maxs = df.groupby(df.index.year)['Max'].max()
   mins = np.array(mins)
   maxs = np.array(maxs)
+  # print(mins, maxs, "hola_mins")
   mean_min = (mins.mean())
   std_min = (np.std(mins, ddof=1))  # desviacion estandar
   coef_variacion_min = std_min / mean_min
@@ -70,16 +68,15 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None, Min_rev=None)
   # calculate mim, max, mean, min_rev and mean_rev
-  for i in range(data.index.min().year, data.index.max().year + 1):
-    for j in range(1, 13):
-      # filtro los datos por año y mes para hacer el analisis
-      data_filter = data[(data.index.year == i) & (data.index.month == j)]
-      row = [str(i) + str(-j),
-             data_filter['cuenca-base'].min(),
-             data_filter['cuenca-base'].max(),
-             data_filter['cuenca-base'].mean(),
-             data_filter['cuenca-base'][data['cuenca-base'] > umbral_Q10].min()]
-      df.loc[len(df)] = row
+  grouped = data.groupby([data.index.year, data.index.month])
+  for group, data_filter in grouped:
+    year, month = group
+    min_value = data_filter['cuenca-base'].min()
+    max_value = data_filter['cuenca-base'].max()
+    mean_value = data_filter['cuenca-base'].mean()
+    min_rev_value = data_filter.loc[data_filter['cuenca-base'] > umbral_Q10, 'cuenca-base'].min()
+    row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value]
+    df.loc[len(df)] = row
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   # df = df.set_index('Fecha')
   alpha_max = (np.sqrt(6) * std_max) / np.pi
@@ -90,24 +87,26 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   #
   umbral_QB = u_max + (yt_QB * alpha_max)
   umbral_Q15 = u_max + (yt_Q15 * alpha_max)
+  # print(umbral_Q15, "umbral_q15")
   #
   ##
   df = pd.DataFrame()
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None, Min_rev=None, Mean_rev=None)
-  for i in range(data.index.min().year, data.index.max().year + 1):
-    for j in range(1, 13):
-      # filtro los datos por año y mes para hacer el analisis
-      data_filter = data[(data.index.year == i) & (data.index.month == j)]
-      row = [str(i) + str(-j),
-             data_filter['cuenca-base'].min(),
-             data_filter['cuenca-base'].max(),
-             data_filter['cuenca-base'].mean(),
-             data_filter['cuenca-base'][data['cuenca-base'] > umbral_Q10].min(),
-             data_filter['cuenca-base'][(data['cuenca-base'] > umbral_Q10) & (data['cuenca-base'] < umbral_Q15)].mean()]
-      df.loc[len(df)] = row
+  grouped = data.groupby([data.index.year, data.index.month])
+  for group, data_filter in grouped:
+    year, month = group
+    min_value = data_filter['cuenca-base'].min()
+    max_value = data_filter['cuenca-base'].max()
+    mean_value = data_filter['cuenca-base'].mean()
+    min_rev_value = data_filter.loc[data_filter['cuenca-base'] > umbral_Q10, 'cuenca-base'].min()
+    mean_rev_value = data_filter.loc[
+      (data_filter['cuenca-base'] > umbral_Q10) & (data_filter['cuenca-base'] < umbral_Q15), 'cuenca-base'].mean()
+    row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value, mean_rev_value]
+    df.loc[len(df)] = row
   #########
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
+  # print(df)
   estado.umbrales['QTR15'] = umbral_Q15
   estado.umbralesQB = umbral_QB
   estado.QTR10 = umbral_Q10
@@ -337,11 +336,12 @@ def org_df2_1(estado: EstadoIdeam, df):
   for j in range(1, 13):
     # filtro los datos por año y mes para hacer el analisis
     data_filter = df[df.index.month == j]
-    row = [str(i) + str(-j), data_filter['Mean'].mean(), data_filter['Min_rev'].min(), data_filter['Mean_rev'].mean()]
+    row = [str(i) + str(-j), data_filter['Mean'].mean(), data_filter['Min_rev'].min(), data_filter['Mean_rev'].mean()] # cambiado
     df2.loc[len(df2)] = row
   # data view
   df2['Fecha'] = pd.to_datetime(df2['Fecha'])
   df2 = df2.set_index('Fecha')
+  # print(df2)
   estado.df2 = df2
 
 def numeros_naturales():
@@ -352,7 +352,6 @@ def numeros_naturales():
 
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
-  #generador = numeros_naturales()
   data = estado.data
   df_rev = buscar_umbrales(estado)
   org_df2_1(estado, df_rev)
@@ -360,7 +359,6 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
     df_rev = buscar_umbrales(estado)
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
-  # data = df_funcional.copy()
   primer_dia = data.index.min()
   estado.primer_dia = primer_dia
   estado.final_dia = estado.data.index.max()
