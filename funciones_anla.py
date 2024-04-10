@@ -5,7 +5,11 @@ from scipy.stats import norm, lognorm, gumbel_r, pearson3,  weibull_min
 
 
 def calcular_7q10(df_completo: pd.DataFrame) -> list:
-
+  '''
+  Calcula los 7q10
+  @param df_completo:
+  @return: lista 12 7q10 por mes
+  '''
   def unico_7q10(df: pd.DataFrame) -> float:
     vesn: list = [0] * len(df['cuenca-base'])
     vesln: list = [0] * len(df['cuenca-base'])

@@ -1,11 +1,11 @@
 import json
 import pandas as pd
 import estado_algoritmo
-from limpieza_datos import process_df
+from limpieza_datos import process_df, ErrorFecha
 import copy
 
 
-def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo]:
+def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
   with open("setup.json", "r") as archivo_json:
     datos = json.load(archivo_json)
     base = pd.read_csv(datos['archivos']['archivo_base'])
@@ -17,7 +17,11 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo]:
       else:
         areas = None
       apoyo = pd.read_csv(datos['archivo_apoyo'])
-    df_limpio = process_df(base, apoyo, areas)
+    try:
+      df_limpio = process_df(base, apoyo, areas)
+    except ErrorFecha as e:
+      print(e)
+      return None
     objeto_base: estado_algoritmo.EstadoAlgoritmo
     if datos['organismo'] == 'anla':
       objeto_base = estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'])
@@ -36,7 +40,7 @@ def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple
   apoyo = None
   try:
     base = pd.read_csv(datos[0])
-  except:
+  except FileNotFoundError:
     print("No hay ningun archivo base")
     return None
   if enso is not None:
@@ -46,7 +50,7 @@ def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple
     # si hay apoyo
     try:
       apoyo = pd.read_csv(datos[1])
-    except:
+    except FileNotFoundError:
       print("No hay ningun archivo de apoyo")
       apoyo = None
   base = process_df(base, apoyo, areas)
@@ -60,17 +64,16 @@ def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso: str) -> list[est
   estado_normal = copy.deepcopy(estado)
   estado_ninio = copy.deepcopy(estado)
   estado_ninia = copy.deepcopy(estado)
-  datos_csv = estado.data
   with open(enso, 'r') as file:
     # Leer el contenido del archivo CSV
     datos_enso = json.load(file)
-    #datos_enso = file.read()
   nino_set = set(datos_enso['ninio'])
   nina_set = set(datos_enso['ninia'])
   datos_nino = estado_ninio.data[estado_ninio.data.index.year.isin(nino_set)].copy()
   datos_nina = estado_ninia.data[estado_ninia.data.index.year.isin(nina_set)].copy()
   if datos_enso['normal'] == -1:
-    datos_normal = estado_normal.data[~(estado_normal.data.index.year.isin(nino_set) | estado_normal.data.index.year.isin(nina_set))].copy()
+    datos_normal = estado_normal.data[~(estado_normal.data.index.year.isin(nino_set) |
+                                        estado_normal.data.index.year.isin(nina_set))].copy()
   else:
     normal_set = set(datos_enso['normal'])
     datos_normal = estado_normal.data[estado_normal.data.index.year.isin(normal_set)].copy()

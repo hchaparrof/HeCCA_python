@@ -3,6 +3,71 @@ import numpy as np
 import pandas as pd
 from datetime import datetime as todaysDateTime
 from sklearn.linear_model import LinearRegression
+import re
+
+
+class ErrorFecha(Exception):
+  pass
+
+
+def tiene_horas(cadena: str) -> bool:
+  return ":" in cadena
+
+
+def find_months(text: str) -> bool:
+    english_months_regex = (r'\b(?:January|February|March|April|May|June|July|August|September|'
+                            r'October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b')
+    spanish_months_regex = (r'\b(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|'
+                            r'noviembre|diciembre|ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\b')
+    english_matches = re.findall(english_months_regex, text, flags=re.IGNORECASE)
+    spanish_matches = re.findall(spanish_months_regex, text, flags=re.IGNORECASE)
+    all_matches = english_matches + spanish_matches
+    return bool(all_matches)
+
+
+def formato_fecha(datos: pd.DataFrame) -> (int, str):
+  primero: str = ""
+  segundo: str = ""
+  tercero: str = ""
+  a = datos.sample()
+  c = a.index[0]
+  if not (c + 1 in datos.index):
+    c -= 2
+  b = datos.loc[c+1]
+  if len(a['Fecha'].iloc[0]) < 10:
+    return 2, ""
+  if find_months(a['Fecha'].iloc[0]):
+    return 1, ""
+  excedente = ""
+  if ":" in a['Fecha'].iloc[0]:
+    excedente = " %H:%M:%S"
+  str_year = "%Y"
+  str_month = "%m"
+  str_day = "%d"
+  separador = ()
+  if a['Fecha'].iloc[0][4].isdigit():  # empieza con dia o mes
+    tercero = str_year
+    separador = (a['Fecha'].iloc[0][2], a['Fecha'].iloc[0][2])
+    a = pd.to_datetime(a['Fecha'], dayfirst=True)
+    b = pd.to_datetime(b['Fecha'], dayfirst=True)
+    dif_fechas = b-a
+    if isinstance(dif_fechas, pd.Series):
+      dif_fechas = dif_fechas.iloc[0]  # Obtener el primer valor de la serie
+    try:
+      if abs(dif_fechas.days) == 1:
+        primero = str_day
+        segundo = str_month
+      else:
+        primero = str_month
+        segundo = str_day
+    except AttributeError:
+      pass
+  else:  # empieza con año
+    separador = (a['Fecha'].iloc[0][4], a['Fecha'].iloc[0][7])
+    primero = str_year
+    segundo = str_month
+    tercero = str_day
+  return 0, primero + separador[0] + segundo + separador[1] + tercero + excedente
 
 
 def datos_anomalos(df: pd.DataFrame, retirar_anomalos: bool = True) -> pd.DataFrame:
@@ -166,6 +231,14 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
     base -- el DataFrame `df_base` reindexado (si `df_apoyo` es None)
     """
   base = df_base[['Fecha', 'Valor']].copy()
+  formato = formato_fecha(base)
+  if formato[0] == 0:
+    base['Fecha'] = pd.to_datetime(base['Fecha'], format=base[1])
+  elif formato[0] == 1:
+    formato['Fecha'] = pd.to_datetime(base['Fecha'])
+  else:
+    raise ErrorFecha("no se entiende el formato de fecha, por favor"
+                     " cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
   base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
   size = base['Fecha'].size
   # days = pd.date_range(base.at[0,'Fecha'], base.at[size-1,'Fecha'])

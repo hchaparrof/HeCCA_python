@@ -11,5 +11,6 @@
   "umbrales": [30.0, 40.0],
   "estacion_hidrologica": "Nombre_de_la_estacion",
   "organismo": "ideam",
-  "existencia_enso": true
+  "existencia_enso": true,
+  "umbrales_unicos": true
 }
