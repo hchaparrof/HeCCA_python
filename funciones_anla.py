@@ -11,11 +11,12 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
   @return: lista 12 7q10 por mes
   '''
   def unico_7q10(df: pd.DataFrame) -> float:
-    vesn: list = [0] * len(df['cuenca-base'])
-    vesln: list = [0] * len(df['cuenca-base'])
-    vesp: list = [0] * len(df['cuenca-base'])
-    vesg: list = [0] * len(df['cuenca-base'])
-    vesw: list = [0] * len(df['cuenca-base'])
+    tamanio_array: int = len(df['cuenca-base'])
+    vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)  # [0] * len(df['cuenca-base'])
+    vesln: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
+    vesp: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
+    vesg: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
+    vesw: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
     # iniciacion valores
     mun, stdn = norm.fit(df['cuenca-base'])
     pln = lognorm.fit(df['cuenca-base'])
@@ -58,6 +59,7 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
     else:
       return -1.0
     pass
+
   def mejor_ajuste(a: float, b: float, c: float, d: float, e: float) -> int:
     maximo: float = max(a, b, c, d, e)  # Encuentra el máximo entre los tres valores
     if a == maximo:  # Comprueba si a es el máximo
@@ -90,7 +92,6 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
   return q_710s
 
 
-
 def calcular_q95(estado: estado_algoritmo.EstadoAnla):
   # todo funcion provisional
   df = pd.DataFrame()
@@ -113,6 +114,7 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
   '''
   mins = []
   maxs = []
+  # todo esto hay que cambiarlo
   for i in range(df.index.min().year, df.index.max().year + 1):
     mins.append(df[df.index.year == i]['Min'].min())
     maxs.append(df[df.index.year == i]['Max'].max())
