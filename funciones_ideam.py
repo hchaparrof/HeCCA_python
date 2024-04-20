@@ -21,12 +21,14 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
     """
   data = estado.data
   # print(data)
-  if estado.h_umbrales['QB'] is None:
-    u_qb = 2.33
-    u_qtq = 2
-  else:
-    u_qb = estado.h_umbrales[0]
-    u_qtq = estado.h_umbrales[1]
+  u_qb = 2.33
+  u_qtq = 2
+  # if estado.h_umbrales['QB'] is None:
+  #   u_qb = 2.33
+  #   u_qtq = 2
+  # else:
+  #   u_qb = estado.h_umbrales[0]
+  #   u_qtq = estado.h_umbrales[1]
   # df es un dataframe temporar que se sobreescribe eventualmente
   df = pd.DataFrame()
   # set columns
@@ -111,6 +113,9 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   estado.umbralesQB = umbral_QB
   estado.QTR10 = umbral_Q10
   estado.QTQ = umbral_QTQ
+  if not estado.h_umbrales['QB'] is None:
+    estado.umbralesQB = estado.h_umbrales[0]
+    estado.QTQ = estado.h_umbrales[1]
   if estado.h_umbrales is not None:
     estado.setear_umbrales([umbral_Q15, umbral_QB, umbral_QTQ, umbral_Q10])
   return df
@@ -231,8 +236,8 @@ def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: str,
     # if (df21[(df21.index>=inicio)&(df21.index<final)].empty):
     #  break
     g = g + 1
-  inicio = primer_dia
-  final = final_dia
+  # inicio = primer_dia
+  # final = final_dia
 
 
 def org_alt(estado: EstadoIdeam):
@@ -353,9 +358,9 @@ def numeros_naturales():
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   data = estado.data
-  df_rev = buscar_umbrales(estado)
+  # df_rev = buscar_umbrales(estado)
   # print(estado.umbrales, estado.str_apoyo)
-  org_df2_1(estado, df_rev)
+  org_df2_1(estado, estado.df_rev)
   if (estado.h_umbrales == None):
     df_rev = buscar_umbrales(estado)
   for i in range(1, 13):

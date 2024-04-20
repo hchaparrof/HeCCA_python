@@ -120,13 +120,13 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
     maxs.append(df[df.index.year == i]['Max'].max())
   mins = np.array(mins)
   # maxs = np.array(maxs)
-  mean_min = (mins.mean())
-  std_min = (np.std(mins, ddof=1))  # desviacion estandar
+  mean_min:float = (mins.mean())
+  std_min:float = (np.std(mins, ddof=1))  # desviacion estandar
   coef_variacion_min = std_min / mean_min
   # mean_max = (maxs.mean())
   # std_max = (np.std(maxs, ddof=1))
-  alpha_min = 1.0079 * (coef_variacion_min ** -1.084)
-  a_alpha_min = (-0.0607 * (coef_variacion_min ** 3)) + (0.5502 * (coef_variacion_min ** 2)) - (
+  alpha_min: float = 1.0079 * (coef_variacion_min ** -1.084)
+  a_alpha_min: float = (-0.0607 * (coef_variacion_min ** 3)) + (0.5502 * (coef_variacion_min ** 2)) - (
           0.4937 * coef_variacion_min) + 1.003
   beta = (a_alpha_min / mean_min) ** (-1)
   # umbrales QTQ y QB
