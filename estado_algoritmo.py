@@ -95,9 +95,9 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   def __init__(self, data_inicial, ruta_m: str):
     super().__init__(data_inicial, ruta_m)
-    self.primera_iteracion = None
-    self.q95 = None
-    self.q7_10 = None
+    self.primera_iteracion: list = [0]*12
+    self.q95: list = [0]*12
+    self.q7_10: list = [0]*12
 
   def principal_funcion(self):
     from funciones_anla import prin_func
