@@ -95,7 +95,7 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   def __init__(self, data_inicial, ruta_m: str):
     super().__init__(data_inicial, ruta_m)
-    self.primera_iteracion: list = [0]*12
+    self.propuesta_caudal: list = [0] * 12
     self.q95: list = [0]*12
     self.q7_10: list = [0]*12
 
@@ -103,3 +103,7 @@ class EstadoAnla(EstadoAlgoritmo):
     from funciones_anla import prin_func
     prin_func(self)
     self.to_csv()
+  def actualizar_caudal(self):
+    self.data_alter = self.data.copy()
+    for i in range(self.data_alter.size):
+      self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['cuenca-base'], self.propuesta_caudal[self.data_alter.iloc[i].name.month - 1])

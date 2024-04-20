@@ -111,5 +111,5 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
-  estado.primera_iteracion = np.minimum(estado.q7_10, estado.q95)
+  estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)
   return pd.DataFrame()

@@ -10,10 +10,6 @@ class ErrorFecha(Exception):
   pass
 
 
-def tiene_horas(cadena: str) -> bool:
-  return ":" in cadena
-
-
 def find_months(text: str) -> bool:
     english_months_regex = (r'\b(?:January|February|March|April|May|June|July|August|September|'
                             r'October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b')
@@ -26,6 +22,11 @@ def find_months(text: str) -> bool:
 
 
 def formato_fecha(datos: pd.DataFrame) -> (int, str):
+  '''
+  @param datos: pd.DataFrame con alguna fecha formatada
+  @return: tuple (int: codigo_validez: (0: formato valido, retorna str; 1: formato valido no ambiguo no retorna str; 2: formato no valido, no retorna str).
+   str: formato de fechas, en caso de no valido se retorna "")
+  '''
   primero: str = ""
   segundo: str = ""
   tercero: str = ""
@@ -39,8 +40,17 @@ def formato_fecha(datos: pd.DataFrame) -> (int, str):
   if find_months(a['Fecha'].iloc[0]):
     return 1, ""
   excedente = ""
-  if ":" in a['Fecha'].iloc[0]:
+  num_dos_punt = a['Fecha'].iloc[0].count(":")
+  if num_dos_punt == 0:
+    pass
+  elif num_dos_punt == 1:
+    excedente = " %H:%M"
+  elif num_dos_punt == 2:
+  #if ":" in a['Fecha'].iloc[0]:
     excedente = " %H:%M:%S"
+  else:
+    raise ErrorFecha("no se entiende el formato de fecha, por favor"
+                     " cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
   str_year = "%Y"
   str_month = "%m"
   str_day = "%d"
@@ -233,7 +243,7 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
   base = df_base[['Fecha', 'Valor']].copy()
   formato = formato_fecha(base)
   if formato[0] == 0:
-    base['Fecha'] = pd.to_datetime(base['Fecha'], format=base[1])
+    base['Fecha'] = pd.to_datetime(base['Fecha'], format=formato[1])
   elif formato[0] == 1:
     formato['Fecha'] = pd.to_datetime(base['Fecha'])
   else:
