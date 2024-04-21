@@ -98,12 +98,22 @@ class EstadoAnla(EstadoAlgoritmo):
     self.propuesta_caudal: list = [0] * 12
     self.q95: list = [0]*12
     self.q7_10: list = [0]*12
+    self.df_cdc_normal: pd.DataFrame = pd.DataFrame()
+    self.df_cdc_alterada: pd.DataFrame = pd.DataFrame()
+    self.cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
+    self.anios_retorn: list = [2, 5, 10, 25]
+    self.cdc_normales: list = [0]*8
+    self.cdc_alterados: list = [0]*8
+    self.caud_return_normal: list = [0]*4
+    self.caud_return_alterado: list = [0] * 4
 
   def principal_funcion(self):
     from funciones_anla import prin_func
     prin_func(self)
     self.to_csv()
+
   def actualizar_caudal(self):
     self.data_alter = self.data.copy()
     for i in range(self.data_alter.size):
-      self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['cuenca-base'], self.propuesta_caudal[self.data_alter.iloc[i].name.month - 1])
+      self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['cuenca-base'],
+                                    self.propuesta_caudal[self.data_alter.iloc[i].name.month - 1])

@@ -108,8 +108,37 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
   return q95s
 
 
+def generar_cdc(datos: pd.DataFrame) -> pd.DataFrame:
+  ordenados_2 = datos.sort_values(by='cuenca-base', ascending=False)
+  ordenados_2['cumsum'] = ordenados_2['cuenca-base'].cumsum() / sum(ordenados_2['cuenca-base'])
+  return ordenados_2
+
+
+def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
+  estado.df_cdc_normal = generar_cdc(estado.data)
+  estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
+                                  estado.df_cdc_alterada['cuenca-base'])
+
+
+def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
+  estado.data_alterado = estado.data.copy()
+  for index, row in estado.data_alterado.iterrows():
+      month: int = row.name.month - 1
+      estado.data_alterado.at[index, 'cuenca-base'] = min(row['cuenca-base'], estado.propuesta_caudal[month])
+  estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
+  estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
+                                   estado.df_cdc_alterada['cuenca-base'])
+
+# def cdc_valor(cdc: pd.DataFrame, valor: float) -> float:
+#   p1 = cdc.loc[cdc[cdc['cumsum']>valor].index[0]]
+#   p2 = cdc.loc[cdc[cdc['cumsum']<valor].index[-1]]
+#   return interpolacion(p1['cuenca-base'],p2['cuenca-base'],p1['cumsum'],p2['cumsum'],valor)
+
+
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
   estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)
+  calc_normal(estado)
+  calc_alterado(estado)
   return pd.DataFrame()
