@@ -12,7 +12,7 @@ class EstadoAlgoritmo:
     self.dif = 1
     self.final_dia = 1
     self.str_apoyo = ""
-    self.preparacion_comun()
+    #self.preparacion_comun()
 
   def preparacion_comun(self):
     pass
@@ -65,7 +65,7 @@ class EstadoIdeam(EstadoAlgoritmo):
     }
     self.porcentajes = np.empty(12)
     self.df_rev = pd.DataFrame()
-
+    self.preparacion_comun()
   def preparacion_comun(self):
     from funciones_ideam import buscar_umbrales
     self.df_rev = buscar_umbrales(self)

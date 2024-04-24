@@ -34,7 +34,7 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
       return crear_lista(objeto_base, datos['archivos']['archivo_enso'])  # datos["archivo_enso"])
     return [objeto_base]
 
-
+#todo esta funcion no esta actualizada como la otra
 def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple = (None, None),
                          organismo: str = "ideam", enso: tuple = None) -> estado_algoritmo.EstadoAlgoritmo | None:
   apoyo = None

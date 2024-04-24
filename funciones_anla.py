@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import norm, lognorm, gumbel_r, pearson3,  weibull_min
 
 
-def unico_7q10(df: pd.DataFrame, tiempo_ret: int) -> float:
+def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   tamanio_array: int = len(df['cuenca-base'])
   vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)  # [0] * len(df['cuenca-base'])
   vesln: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
@@ -94,7 +94,7 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
     meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i]
   q_710s: list = [0]*12
   for i, x in enumerate(meses):
-    q_710s[i] = unico_7q10(x, 10)
+    q_710s[i] = calc_caud_retor(x, 10)
   return q_710s
 
 
@@ -104,7 +104,7 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
   for i in range(1, 13):
     meses[i-1] = estado.data[estado.data.index.month == i]
   for i, x in enumerate(meses):
-    q95s[i] = unico_7q10(x, 95)
+    q95s[i] = calc_caud_retor(x, 95)
   return q95s
 
 
@@ -118,6 +118,7 @@ def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.df_cdc_normal = generar_cdc(estado.data)
   estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
                                   estado.df_cdc_alterada['cuenca-base'])
+  estado.caud_return_normal = caud_retorn_anla(estado.data, estado.anios_retorn)
 
 
 def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
@@ -128,11 +129,19 @@ def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
   estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
                                    estado.df_cdc_alterada['cuenca-base'])
+  estado.caud_return_alterado = caud_retorn_anla(estado.data_alter, estado.anios_retorn)
 
 # def cdc_valor(cdc: pd.DataFrame, valor: float) -> float:
 #   p1 = cdc.loc[cdc[cdc['cumsum']>valor].index[0]]
 #   p2 = cdc.loc[cdc[cdc['cumsum']<valor].index[-1]]
 #   return interpolacion(p1['cuenca-base'],p2['cuenca-base'],p1['cumsum'],p2['cumsum'],valor)
+
+
+def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
+  resultado: list = [0]*len(anios)
+  for i in anios:
+    resultado[i] = calc_caud_retor(df, anios[i])
+  return resultado
 
 
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
@@ -141,4 +150,6 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)
   calc_normal(estado)
   calc_alterado(estado)
+  # todo lo de R
+  # todo iteracion
   return pd.DataFrame()

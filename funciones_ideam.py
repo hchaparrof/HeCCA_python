@@ -361,8 +361,8 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   # df_rev = buscar_umbrales(estado)
   # print(estado.umbrales, estado.str_apoyo)
   org_df2_1(estado, estado.df_rev)
-  if (estado.h_umbrales == None):
-    df_rev = buscar_umbrales(estado)
+  # if (estado.h_umbrales == None):
+  #   df_rev = buscar_umbrales(estado)
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
   primer_dia = data.index.min()
