@@ -8,13 +8,22 @@ En el archivo setup.json llenar los datos que sean necesarios, en caso de que "e
 "umbrales" Se refiere a los umbrales morfometricos de la cuenca de estudio en el lugar de estudio, son los umbrales QB y QTQ o caudal de banca llena y caudal de perdida de conectividad, eso se consigue con un estudio hidraulico para la cuenca, si no se tiene estudios hidraulicos se debe poner false en "existencia_umbrales" en ese caso los umbrales seran tomados como los caudales extremos con un periodo de retorno 2.33 para QB y 2 para QTQ.
 
 Una vez las configuraciones estan completas para correr el código hay que ejecutar el script de la siguiente manera:
-Primero hay que instalar los requerimientos, para lo cual primero hay que asegurarse de tener python en el sistema y ejecutar los siguientes comandos:
+Primero hay que instalar los requerimientos, para lo cual primero hay que asegurarse de tener python en el sistema y ejecutar los siguientes comandos en windows:
 pip install virtualenv
 python -m virtualenv entorno_hecca 
+entorno_hecca\Scripts\activate
 pip install -r requirements.txt
 y luego ahora si correr el código con:
 python3 -OO hecca_final.py
  o 
 python -OO hecca_final.py
-
 dependiendo de como este configurado su path.
+En linux es:
+pip install virtualenv
+python -m virtualenv entorno_hecca
+source entorno_hecca/bin/activate
+pip install -r requirements.txt
+y luego ahora si correr el código con:
+python3 -OO hecca_final.py
+ o 
+python -OO hecca_final.py
