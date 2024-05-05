@@ -6,7 +6,7 @@ from scipy.stats import norm, lognorm, gumbel_r, pearson3,  weibull_min
 
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   tamanio_array: int = len(df['cuenca-base'])
-  vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)  # [0] * len(df['cuenca-base'])
+  vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesln: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesp: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesg: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
@@ -131,10 +131,6 @@ def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
                                    estado.df_cdc_alterada['cuenca-base'])
   estado.caud_return_alterado = caud_retorn_anla(estado.data_alter, estado.anios_retorn)
 
-# def cdc_valor(cdc: pd.DataFrame, valor: float) -> float:
-#   p1 = cdc.loc[cdc[cdc['cumsum']>valor].index[0]]
-#   p2 = cdc.loc[cdc[cdc['cumsum']<valor].index[-1]]
-#   return interpolacion(p1['cuenca-base'],p2['cuenca-base'],p1['cumsum'],p2['cumsum'],valor)
 
 
 def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
