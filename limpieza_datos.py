@@ -242,14 +242,14 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
     """
   base = df_base[['Fecha', 'Valor']].copy()
   formato = formato_fecha(base)
-  if formato[0] == 0:
+  if formato[0] == 0: #formato encontrado utilizable
     base['Fecha'] = pd.to_datetime(base['Fecha'], format=formato[1])
-  elif formato[0] == 1:
-    formato['Fecha'] = pd.to_datetime(base['Fecha'])
-  else:
+  elif formato[0] == 1: # formato encontrado pero pandas lo entiende mejor
+    base['Fecha'] = pd.to_datetime(base['Fecha'])
+  else: # formato no encontrado
     raise ErrorFecha("no se entiende el formato de fecha, por favor"
                      " cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
-  base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
+  # base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
   size = base['Fecha'].size
   # days = pd.date_range(base.at[0,'Fecha'], base.at[size-1,'Fecha'])
   days = pd.date_range(base.iloc[0]['Fecha'], base.iloc[-1]['Fecha'])
