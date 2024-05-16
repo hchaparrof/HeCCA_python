@@ -30,7 +30,7 @@ class EstadoAlgoritmo:
 
     print("hola")
     self.df2.to_csv(modificar_nombre_archivo(self.ruta))
-    self.data_alter.to_csv(self.str_apoyo)
+    # self.data_alter.to_csv(self.str_apoyo)
 
 
 class EstadoIdeam(EstadoAlgoritmo):
