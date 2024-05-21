@@ -328,6 +328,7 @@ def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento
 
 
 def org_df2_1(estado: EstadoIdeam, df):
+  # todo filtrar datos ideam enso
   """coge los valores de data(dataframe global) y los usa para crear el df2(df global) con 12 filas y 3 columnas (promedio, min_rev y mean_rev) por mes."""
   df2 = estado.df2
   data = estado.data
@@ -358,11 +359,7 @@ def numeros_naturales():
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   data = estado.data
-  # df_rev = buscar_umbrales(estado)
-  # print(estado.umbrales, estado.str_apoyo)
-  org_df2_1(estado, estado.df_rev)
-  # if (estado.h_umbrales == None):
-  #   df_rev = buscar_umbrales(estado)
+  org_df2_1(estado, estado.df_month_men)
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
   primer_dia = data.index.min()

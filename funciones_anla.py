@@ -1,7 +1,7 @@
 import pandas as pd
 import estado_algoritmo
 import numpy as np
-from scipy.stats import norm, lognorm, gumbel_r, pearson3,  weibull_min
+from scipy.stats import norm, lognorm, gumbel_r, pearson3, weibull_min
 
 
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
@@ -92,7 +92,7 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
   meses = [pd.DataFrame()] * 12
   for i in range(1, 13):
     meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i]
-  q_710s: list = [0]*12
+  q_710s: list = [0] * 12
   for i, x in enumerate(meses):
     q_710s[i] = calc_caud_retor(x, 10)
   return q_710s
@@ -100,9 +100,9 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
 
 def calcular_q95(estado: estado_algoritmo.EstadoAnla):
   meses: list = [pd.DataFrame()] * 12
-  q95s: list = [0]*12
+  q95s: list = [0] * 12
   for i in range(1, 13):
-    meses[i-1] = estado.data[estado.data.index.month == i]
+    meses[i - 1] = estado.data[estado.data.index.month == i]
   for i, x in enumerate(meses):
     q95s[i] = calc_caud_retor(x, 95)
   return q95s
@@ -124,20 +124,33 @@ def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
 def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.data_alterado = estado.data.copy()
   for index, row in estado.data_alterado.iterrows():
-      month: int = row.name.month - 1
-      estado.data_alterado.at[index, 'cuenca-base'] = min(row['cuenca-base'], estado.propuesta_caudal[month])
+    month: int = row.name.month - 1
+    estado.data_alterado.at[index, 'cuenca-base'] = min(row['cuenca-base'], estado.propuesta_caudal[month])
   estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
   estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
                                    estado.df_cdc_alterada['cuenca-base'])
   estado.caud_return_alterado = caud_retorn_anla(estado.data_alter, estado.anios_retorn)
 
 
-
 def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
-  resultado: list = [0]*len(anios)
+  resultado: list = [0] * len(anios)
   for i in anios:
     resultado[i] = calc_caud_retor(df, anios[i])
   return resultado
+
+
+def general_month_mean(estado: estado_algoritmo.EstadoAnla) -> None:
+  df = pd.DataFrame()
+  df = df.assign(Fecha=None, Mean=None)
+  grupo = df.groupby([estado.data.index.year, estado.data.index.month])
+  for group, data_filter in grupo:
+    year, month = group
+    mean_value = data_filter['cuenca-base'].mean()
+    row = [f"{year}-{month}", mean_value]
+    df.loc[len(df)] = row
+  df['Fecha'] = pd.to_datetime(df['Fecha'])
+  df = df.set_index('Fecha')
+  estado.df_month_mean = df.copy()
 
 
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:

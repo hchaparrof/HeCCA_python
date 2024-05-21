@@ -1,7 +1,7 @@
 import datetime
 import numpy as np
 import pandas as pd
-from datetime import datetime as todaysDateTime
+from datetime import datetime as today_date_time
 from sklearn.linear_model import LinearRegression
 import re
 
@@ -22,14 +22,15 @@ def find_months(text: str) -> bool:
 
 
 def formato_fecha(datos: pd.DataFrame) -> (int, str):
-  '''
+  """
   @param datos: pd.DataFrame con alguna fecha formatada
-  @return: tuple (int: codigo_validez: (0: formato valido, retorna str; 1: formato valido no ambiguo no retorna str; 2: formato no valido, no retorna str).
+  @return: tuple (int: codigo_validez: (0: formato valido, retorna str; 1: formato valido no ambiguo no retorna str;
+   2: formato no valido, no retorna str).
    str: formato de fechas, en caso de no valido se retorna "")
-  '''
+  """
   primero: str = ""
   segundo: str = ""
-  tercero: str = ""
+  # tercero: str = ""
   a = datos.sample()
   c = a.index[0]
   if not (c + 1 in datos.index):
@@ -46,7 +47,6 @@ def formato_fecha(datos: pd.DataFrame) -> (int, str):
   elif num_dos_punt == 1:
     excedente = " %H:%M"
   elif num_dos_punt == 2:
-  #if ":" in a['Fecha'].iloc[0]:
     excedente = " %H:%M:%S"
   else:
     raise ErrorFecha("no se entiende el formato de fecha, por favor"
@@ -54,7 +54,7 @@ def formato_fecha(datos: pd.DataFrame) -> (int, str):
   str_year = "%Y"
   str_month = "%m"
   str_day = "%d"
-  separador = ()
+  # separador = ()
   if a['Fecha'].iloc[0][4].isdigit():  # empieza con dia o mes
     tercero = str_year
     separador = (a['Fecha'].iloc[0][2], a['Fecha'].iloc[0][2])
@@ -152,8 +152,8 @@ def prim_ult(df1: pd.DataFrame) -> (int, int, int):
   if max_date.month != 12 or max_date.day != 31:
     max_date = datetime.date(df1.index[-1].year - 1, 12, 31)
   delta_anios = max_date.year-min_date.year+1
-  min = int(min_date.year)
-  max = int(max_date.year)
+  # min = int(min_date.year)
+  # max = int(max_date.year)
   return min_date, max_date, delta_anios
 
 
@@ -181,7 +181,20 @@ def summarize_missing_values(complete_data: pd.DataFrame) -> float:
 """Llenado completo"""
 
 
-def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tuple = None) -> pd.DataFrame:
+def funcion_miguel(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> bool:
+  return True
+  # if df_apoyo:
+  #   pass
+  #   # hacer algo
+  # else:
+  #   df_base.min()
+  #   pass
+  #   # normal
+  # todo esto
+  # todo esto
+
+
+def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tuple = None) -> pd.DataFrame | None:
   """
     Procesa un DataFrame con o sin un DataFrame de apoyo para llenar los valores NaN en el primer DataFrame.
 
@@ -199,10 +212,16 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
     pandas.DataFrame
         El DataFrame df_base procesado con los valores NaN reemplazados, si es posible.
     """
+  # todo lo que esta haciendo miguel
+  if funcion_miguel(df_base, df_apoyo):
+    pass
+  else:
+    return None
   if df_apoyo is not None:
     df_base, df_apoyo = organize_df(df_base, df_apoyo)
   else:
     df_base = organize_df(df_base)
+  # todo aquí se pone lo de miguel
   if areas is not None:
     df_base = df_base / areas[0]
     df_apoyo = df_apoyo / areas[1]
@@ -242,13 +261,13 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
     """
   base = df_base[['Fecha', 'Valor']].copy()
   formato = formato_fecha(base)
-  if formato[0] == 0: #formato encontrado utilizable
+  if formato[0] == 0:  # formato encontrado utilizable
     base['Fecha'] = pd.to_datetime(base['Fecha'], format=formato[1])
-  elif formato[0] == 1: # formato encontrado pero pandas lo entiende mejor
+  elif formato[0] == 1:  # formato encontrado pero pandas lo entiende mejor
     base['Fecha'] = pd.to_datetime(base['Fecha'])
-  else: # formato no encontrado
+  else:  # formato no encontrado
     raise ErrorFecha("no se entiende el formato de fecha, por favor"
-                     " cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
+                     " cambielo a un formato sin ambigüedades, recomendamos yyyy/mm/dd")
   # base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
   size = base['Fecha'].size
   # days = pd.date_range(base.at[0,'Fecha'], base.at[size-1,'Fecha'])
@@ -256,14 +275,75 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
   days_ind = pd.DatetimeIndex(days)
   base = base.set_index('Fecha')
   base = base.reindex(days)
+  base, anios = anios_vacios(base)
   if df_apoyo is not None:
     apoyo = df_apoyo[['Fecha', 'Valor']].copy()
     apoyo['Fecha'] = pd.to_datetime(apoyo['Fecha'])
     apoyo = apoyo.set_index('Fecha')
     apoyo = apoyo.reindex(days)
+    apoyo = quitar_anio(apoyo, anios)
     return base, apoyo
   else:
     return base
+def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.DataFrame, pd.DataFrame):
+  """
+    Esta función recibe dos DataFrames, uno obligatorio `df_base` y otro opcional `df_apoyo`.
+    La función convierte la columna 'Fecha' en tipo datetime y
+    reindexa los DataFrames con un rango de fechas completo desde la primera hasta la última fecha presente en `df_base`
+    Si `df_apoyo` es diferente de None, también se procesa `df_apoyo` y se retornan ambos DataFrames reindexados.
+    En caso contrario, solo se retorna `df_base` reindexado.
+
+    Argumentos:
+    df_base -- un DataFrame con dos columnas 'Fecha' y 'Valor'
+    df_apoyo -- un DataFrame con dos columnas 'Fecha' y 'Valor' (opcional)
+
+    Retorna:
+    (base, apoyo) -- tupla con los DataFrames `df_base` y `df_apoyo` reindexados (si `df_apoyo` no es None)
+    base -- el DataFrame `df_base` reindexado (si `df_apoyo` es None)
+    """
+  base = df_base[['Fecha', 'Valor']].copy()
+  formato = formato_fecha(base)
+  if formato[0] == 0:  # formato encontrado utilizable
+    base['Fecha'] = pd.to_datetime(base['Fecha'], format=formato[1])
+  elif formato[0] == 1:  # formato encontrado pero pandas lo entiende mejor
+    base['Fecha'] = pd.to_datetime(base['Fecha'])
+  else:  # formato no encontrado
+    raise ErrorFecha("no se entiende el formato de fecha, por favor"
+                     " cambielo a un formato sin ambigüedades, recomendamos yyyy/mm/dd")
+  # base['Fecha'] = pd.to_datetime(base['Fecha'], yearfirst=True)
+  size = base['Fecha'].size
+  # days = pd.date_range(base.at[0,'Fecha'], base.at[size-1,'Fecha'])
+  days = pd.date_range(base.iloc[0]['Fecha'], base.iloc[-1]['Fecha'])
+  days_ind = pd.DatetimeIndex(days)
+  base = base.set_index('Fecha')
+  base = base.reindex(days)
+  base, anios = anios_vacios(base)
+  if df_apoyo is not None:
+    apoyo = df_apoyo[['Fecha', 'Valor']].copy()
+    apoyo['Fecha'] = pd.to_datetime(apoyo['Fecha'])
+    apoyo = apoyo.set_index('Fecha')
+    apoyo = apoyo.reindex(days)
+    apoyo = quitar_anio(apoyo, anios)
+    return base, apoyo
+  else:
+    return base
+
+
+def anios_vacios(df_propio: pd.DataFrame) -> (pd.DataFrame, set):
+  prueba_grupe_2 = df_propio.groupby([df_propio.index.year])
+  df = pd.DataFrame()
+  df = df.assign(Fecha=None, Nas=None)
+  for group, data_filter in prueba_grupe_2:
+    year = group[0]
+    row = [year, data_filter.isna().sum().iloc[0] / 365]
+    df.loc[len(df)] = row
+  anios_completos = set(df[df['Nas'] < 0.9]['Fecha'])
+  df_propio = quitar_anio(df_propio, anios_completos)
+  return df_propio, anios_completos
+
+
+def quitar_anio(df: pd.DataFrame, anios: set) -> pd.DataFrame:
+  return df[df.index.year.isin(anios)].copy()
 
 
 def fill_na_values(df_base: pd.DataFrame, df_apoyo: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
@@ -339,8 +419,8 @@ def sacar_anios(df1: pd.DataFrame) -> pd.DataFrame:
         DataFrame con el mismo contenido que `df1` pero sin el año correspondiente a la primera y última fechas.
     """
   min_date, max_date, delta_anios = prim_ult(df1)
-  Today_time = todaysDateTime.min.time()
-  min_date_corr = todaysDateTime.combine(min_date, Today_time)
-  max_date_corr = todaysDateTime.combine(max_date, Today_time)
+  Today_time = today_date_time.min.time()
+  min_date_corr = today_date_time.combine(min_date, Today_time)
+  max_date_corr = today_date_time.combine(max_date, Today_time)
   df1 = df1[df1.index >= min_date_corr][df1[df1.index >= min_date_corr].index <= max_date_corr].copy()
   return df1

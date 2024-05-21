@@ -12,6 +12,7 @@ class EstadoAlgoritmo:
     self.dif = 1
     self.final_dia = 1
     self.str_apoyo = ""
+    self.df_month_mean = pd.DataFrame()
     #self.preparacion_comun()
 
   def preparacion_comun(self):
@@ -65,11 +66,10 @@ class EstadoIdeam(EstadoAlgoritmo):
       'QTQ': h_umbrales[1]
     }
     self.porcentajes = np.empty(12)
-    self.df_rev = pd.DataFrame()
     self.preparacion_comun()
   def preparacion_comun(self):
     from funciones_ideam import buscar_umbrales
-    self.df_rev = buscar_umbrales(self)
+    self.df_month_mean = buscar_umbrales(self)
 
   def principal_funcion(self):
     from funciones_ideam import prin_func

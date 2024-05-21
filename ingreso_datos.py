@@ -18,7 +18,7 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
         areas = None
       apoyo = pd.read_csv(datos['archivo_apoyo'])
     try:
-      df_limpio = process_df(base, apoyo, areas)
+      df_limpio: pd.DataFrame | None = process_df(base, apoyo, areas)
     except ErrorFecha as e:
       print(e)
       return None
@@ -34,7 +34,9 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
       return crear_lista(objeto_base, datos['archivos']['archivo_enso'])  # datos["archivo_enso"])
     return [objeto_base]
 
-#todo esta funcion no esta actualizada como la otra
+# todo esta funcion no esta actualizada como la otra
+
+
 def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple = (None, None),
                          organismo: str = "ideam", enso: tuple = None) -> estado_algoritmo.EstadoAlgoritmo | None:
   apoyo = None
