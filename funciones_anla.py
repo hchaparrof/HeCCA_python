@@ -5,19 +5,19 @@ from scipy.stats import norm, lognorm, gumbel_r, pearson3, weibull_min
 
 
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
-  tamanio_array: int = len(df['cuenca-base'])
+  tamanio_array: int = len(df['Valor'])
   vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesln: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesp: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesg: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesw: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   # iniciacion valores
-  mun, stdn = norm.fit(df['cuenca-base'])
-  pln = lognorm.fit(df['cuenca-base'])
-  mug, beta = gumbel_r.fit(df['cuenca-base'])
-  a1, m, s = pearson3.fit(df['cuenca-base'])
-  shape, loc, scale = weibull_min.fit(df['cuenca-base'])
-  for i, x in enumerate(df['cuenca-base']):
+  mun, stdn = norm.fit(df['Valor'])
+  pln = lognorm.fit(df['Valor'])
+  mug, beta = gumbel_r.fit(df['Valor'])
+  a1, m, s = pearson3.fit(df['Valor'])
+  shape, loc, scale = weibull_min.fit(df['Valor'])
+  for i, x in enumerate(df['Valor']):
     n = normal_distr(x, mun, stdn)
     vesn[i] = n
     n = lognormal_distr(x, pln[0], pln[2])
@@ -28,11 +28,11 @@ def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
     vesw[i] = n
     n = pearson3.pdf(x, a1, m, s)
     vesp[i] = n
-  gumball_corr = np.corrcoef(df['cuenca-base'], vesg)[0, 1]
-  normal_corr = np.corrcoef(df['cuenca-base'], vesn)[0, 1]
-  pearson_corr = np.corrcoef(df['cuenca-base'], vesp)[0, 1]
-  lognorm_corr = np.corrcoef(df['cuenca-base'], vesln)[0, 1]
-  weibull_corr = np.corrcoef(df['cuenca-base'], vesw)[0, 1]
+  gumball_corr = np.corrcoef(df['Valor'], vesg)[0, 1]
+  normal_corr = np.corrcoef(df['Valor'], vesn)[0, 1]
+  pearson_corr = np.corrcoef(df['Valor'], vesp)[0, 1]
+  lognorm_corr = np.corrcoef(df['Valor'], vesln)[0, 1]
+  weibull_corr = np.corrcoef(df['Valor'], vesw)[0, 1]
   # Sacar el mayor de las correlaciones y sacar en 10 años cuanto es el 7Q10
   tiempo_retorno = tiempo_ret
   prob_ret = 1 - (1 / tiempo_retorno)
@@ -88,7 +88,7 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
   '''
 
   promedio_7_dias: pd.DataFrame = df_completo.rolling(7).mean()
-  df: pd.DataFrame = promedio_7_dias.groupby(promedio_7_dias.index.year)['cuenca-base'].min()
+  df: pd.DataFrame = promedio_7_dias.groupby(promedio_7_dias.index.year)['Valor'].min()
   meses = [pd.DataFrame()] * 12
   for i in range(1, 13):
     meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i]
@@ -109,15 +109,15 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
 
 
 def generar_cdc(datos: pd.DataFrame) -> pd.DataFrame:
-  ordenados_2 = datos.sort_values(by='cuenca-base', ascending=False)
-  ordenados_2['cumsum'] = ordenados_2['cuenca-base'].cumsum() / sum(ordenados_2['cuenca-base'])
+  ordenados_2 = datos.sort_values(by='Valor', ascending=False)
+  ordenados_2['cumsum'] = ordenados_2['Valor'].cumsum() / sum(ordenados_2['Valor'])
   return ordenados_2
 
 
 def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.df_cdc_normal = generar_cdc(estado.data)
   estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
-                                  estado.df_cdc_alterada['cuenca-base'])
+                                  estado.df_cdc_alterada['Valor'])
   estado.caud_return_normal = caud_retorn_anla(estado.data, estado.anios_retorn)
 
 
@@ -125,11 +125,12 @@ def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.data_alterado = estado.data.copy()
   for index, row in estado.data_alterado.iterrows():
     month: int = row.name.month - 1
-    estado.data_alterado.at[index, 'cuenca-base'] = min(row['cuenca-base'], estado.propuesta_caudal[month])
+    estado.data_alterado.at[index, 'Valor'] = min(row['Valor'], estado.propuesta_caudal[month])
   estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
   estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
-                                   estado.df_cdc_alterada['cuenca-base'])
+                                   estado.df_cdc_alterada['Valor'])
   estado.caud_return_alterado = caud_retorn_anla(estado.data_alter, estado.anios_retorn)
+  estado.df_month_mean_rev = general_month_mean(estado.data_alterado)
 
 
 def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
@@ -139,21 +140,22 @@ def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
   return resultado
 
 
-def general_month_mean(estado: estado_algoritmo.EstadoAnla) -> None:
+def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
   df = pd.DataFrame()
   df = df.assign(Fecha=None, Mean=None)
-  grupo = df.groupby([estado.data.index.year, estado.data.index.month])
+  grupo = df.groupby([data.index.year, data.index.month])
   for group, data_filter in grupo:
     year, month = group
-    mean_value = data_filter['cuenca-base'].mean()
+    mean_value = data_filter['Valor'].mean()
     row = [f"{year}-{month}", mean_value]
     df.loc[len(df)] = row
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
-  estado.df_month_mean = df.copy()
+  return df
 
 
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
+  estado.df_month_mean = general_month_mean(estado.data)
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
   estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)

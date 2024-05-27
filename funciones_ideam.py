@@ -4,7 +4,7 @@ from estado_algoritmo import EstadoIdeam
 from estadistica_ideam import *
 
 
-def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
+def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.DataFrame:
   """
     calcula los umbrales QTR 15, QTQ, QB y Q10, además del minimo revisado por año.
 
@@ -19,6 +19,7 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
       el dataframe con los minimos y promedios revisados
       los umbrales se guardan en las variables globales
     """
+  print("hola_0.5")
   data = estado.data
   # print(data)
   u_qb = 2.33
@@ -37,8 +38,8 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   grouped = data.groupby([data.index.year, data.index.month])
   for group, data_filter in grouped:
     year, month = group
-    row = [f"{year}-{month}", data_filter['cuenca-base'].min(), data_filter['cuenca-base'].max(),
-           data_filter['cuenca-base'].mean()]
+    row = [f"{year}-{month}", data_filter['Valor'].min(), data_filter['Valor'].max(),
+           data_filter['Valor'].mean()]
     df.loc[len(df)] = row
   # data view
   df['Fecha'] = pd.to_datetime(df['Fecha'])
@@ -73,10 +74,10 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   grouped = data.groupby([data.index.year, data.index.month])
   for group, data_filter in grouped:
     year, month = group
-    min_value = data_filter['cuenca-base'].min()
-    max_value = data_filter['cuenca-base'].max()
-    mean_value = data_filter['cuenca-base'].mean()
-    min_rev_value = data_filter.loc[data_filter['cuenca-base'] > umbral_Q10, 'cuenca-base'].min()
+    min_value = data_filter['Valor'].min()
+    max_value = data_filter['Valor'].max()
+    mean_value = data_filter['Valor'].mean()
+    min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value]
     df.loc[len(df)] = row
   df['Fecha'] = pd.to_datetime(df['Fecha'])
@@ -97,27 +98,28 @@ def buscar_umbrales(estado: EstadoIdeam) -> pd.DataFrame:
   grouped = data.groupby([data.index.year, data.index.month])
   for group, data_filter in grouped:
     year, month = group
-    min_value = data_filter['cuenca-base'].min()
-    max_value = data_filter['cuenca-base'].max()
-    mean_value = data_filter['cuenca-base'].mean()
-    min_rev_value = data_filter.loc[data_filter['cuenca-base'] > umbral_Q10, 'cuenca-base'].min()
+    min_value = data_filter['Valor'].min()
+    max_value = data_filter['Valor'].max()
+    mean_value = data_filter['Valor'].mean()
+    min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     mean_rev_value = data_filter.loc[
-      (data_filter['cuenca-base'] > umbral_Q10) & (data_filter['cuenca-base'] < umbral_Q15), 'cuenca-base'].mean()
+      (data_filter['Valor'] > umbral_Q10) & (data_filter['Valor'] < umbral_Q15), 'Valor'].mean()
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value, mean_rev_value]
     df.loc[len(df)] = row
   #########
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
   # print(df)
-  estado.umbrales['QTR15'] = umbral_Q15
-  estado.umbralesQB = umbral_QB
-  estado.QTR10 = umbral_Q10
-  estado.QTQ = umbral_QTQ
-  if not estado.h_umbrales['QB'] is None:
-    estado.umbralesQB = estado.h_umbrales[0]
-    estado.QTQ = estado.h_umbrales[1]
-  if estado.h_umbrales is not None:
-    estado.setear_umbrales([umbral_Q15, umbral_QB, umbral_QTQ, umbral_Q10])
+  if cambiar_umbrales:
+    estado.umbrales['QTR15'] = umbral_Q15
+    estado.umbralesQB = umbral_QB
+    estado.QTR10 = umbral_Q10
+    estado.QTQ = umbral_QTQ
+    if not estado.h_umbrales['QB'] is None:
+      estado.umbralesQB = estado.h_umbrales[0]
+      estado.QTQ = estado.h_umbrales[1]
+    if estado.h_umbrales is not None:
+      estado.setear_umbrales([umbral_Q15, umbral_QB, umbral_QTQ, umbral_Q10])
   return df
 
 
@@ -136,7 +138,7 @@ def df_eventos(df_objetivo, lista_eventos):
   return df_objetivo
 
 
-def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='cuenca-base'):
+def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='Valor'):
   """funcion que coge un dataframe con datos de caudal y determina
   que días hubo eventos poniendo 1 o 0 donde sea necesario
   Parameters
@@ -166,11 +168,11 @@ def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='cuenca-base'):
   dfh.loc[(dfh[str4_h] <= umbral_Q15) & (dfh[str4_h] > umbral_QB), 'event_QB'] = 1
   dfh.loc[~((dfh[str4_h] <= umbral_Q15) & (dfh[str4_h] > umbral_QB)), 'event_QB'] = 0
 
-  dfh.loc[(dfh['cuenca-base'] > umbral_Q10) & (dfh['cuenca-base'] <= umbral_QTQ), 'event_QTQ'] = 1
+  dfh.loc[(dfh['Valor'] > umbral_Q10) & (dfh['Valor'] <= umbral_QTQ), 'event_QTQ'] = 1
   dfh.loc[~((dfh[str4_h] > umbral_Q10) & (dfh[str4_h] <= umbral_QTQ)), 'event_QTQ'] = 0
   # #
 
-  dfh.loc[dfh['cuenca-base'] <= umbral_Q10, 'event_Q10'] = 1
+  dfh.loc[dfh['Valor'] <= umbral_Q10, 'event_Q10'] = 1
   dfh.loc[dfh[str4_h] > umbral_Q10, 'event_Q10'] = 0
 
 
@@ -262,7 +264,7 @@ def org_alt(estado: EstadoIdeam):
   eventos_rev_qb.clear()
   eventos_rev_qtq.clear()
   eventos_rev_q10.clear()
-  nombrar_evento(estado, estado.data_alter2, 'cuenca-base')
+  nombrar_evento(estado, estado.data_alter2, 'Valor')
   contar_eventos(estado, estado.data_alter2, 'event_QTR15', eventos_rev_qtr15, 'event_QTR15', QTR_15)
   estado.listas_eventos['eventos_rev_qtr15'] = eventos_rev_qtr15
   contar_eventos(estado, estado.data_alter2, 'event_QB', eventos_rev_qb, 'event_QTR15', QB)
@@ -282,7 +284,7 @@ def formar_alter(estado: EstadoIdeam):
   data_alter2 = estado.data_alter2
   df2 = estado.df2
   data = estado.data
-  data_alter = data[['cuenca-base']].copy()
+  data_alter = data[['Valor']].copy()
   data_alter['Aprov_teo'] = np.NaN
   data_alter['check_3'] = np.NaN
   data_alter['check_2'] = np.NaN
@@ -297,26 +299,27 @@ def formar_alter(estado: EstadoIdeam):
     a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
     data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
     data_alter.loc[a_bool, 'check_3'] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
-    b_bool = data_alter['cuenca-base'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
+    b_bool = data_alter['Valor'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
     c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
     d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
-    e_bool = data_alter['cuenca-base'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
+    e_bool = data_alter['Valor'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
     f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
     g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
     data_alter.loc[c_bool,'Q_ajustado'] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
     data_alter.loc[f_bool, 'Q_ajustado'] = 0  # Q obs < aprov teorico = 0 #########
-    data_alter.loc[g_bool, 'Q_ajustado'] = data_alter['cuenca-base'][g_bool] - data_alter['check_3'][g_bool]  # #######
-    data_alter['check_2'] = data_alter['cuenca-base'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
-  a_bool = data_alter['cuenca-base'] < data_alter['check_3']  # los caudales observados que sean menores al minimo revisado
+    data_alter.loc[g_bool, 'Q_ajustado'] = data_alter['Valor'][g_bool] - data_alter['check_3'][g_bool]  # #######
+    data_alter['check_2'] = data_alter['Valor'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
+  a_bool = data_alter['Valor'] < data_alter['check_3']  # los caudales observados que sean menores al minimo revisado
   b_bool = data_alter['check_2'] < data_alter['check_3']  # Q ajustado es menor al minimo revisado
-  data_alter.loc[a_bool, 'Q_ambiental'] = data_alter['cuenca-base']  # los queQobs sean < al minrev no se le hace nada
+  data_alter.loc[a_bool, 'Q_ambiental'] = data_alter['Valor']  # los queQobs sean < al minrev no se le hace nada
   data_alter.loc[(~a_bool) & b_bool, 'Q_ambiental'] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
   data_alter.loc[(~a_bool) & (~b_bool), 'Q_ambiental'] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
-  data_alter['Q_aprov_real'] = data_alter['cuenca-base'] - data_alter['Q_ambiental']  # qobs -qambs
+  data_alter['Q_aprov_real'] = data_alter['Valor'] - data_alter['Q_ambiental']  # qobs -qambs
   data_alter2 = data_alter[['Q_ambiental']].copy()
-  data_alter2.rename(columns={'Q_ambiental': 'cuenca-base'}, inplace=True)
+  data_alter2.rename(columns={'Q_ambiental': 'Valor'}, inplace=True)
   estado.data_alter = data_alter
   estado.data_alter2 = data_alter2
+  print
 
 
 def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
@@ -328,8 +331,9 @@ def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento
 
 
 def org_df2_1(estado: EstadoIdeam, df):
-  # todo filtrar datos ideam enso
   """coge los valores de data(dataframe global) y los usa para crear el df2(df global) con 12 filas y 3 columnas (promedio, min_rev y mean_rev) por mes."""
+  #todo filtrar datos correctos enso
+  print("hola_3")
   df2 = estado.df2
   data = estado.data
   # global df2
@@ -358,8 +362,13 @@ def numeros_naturales():
 
 
 def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
+  print("hola_1")
   data = estado.data
-  org_df2_1(estado, estado.df_month_men)
+  print("hola_1.5")
+  # print(estado.data.head())
+  estado.df_month_mean = buscar_umbrales(estado, False)
+  org_df2_1(estado, estado.df_month_mean)
+  print("hola_2")
   for i in range(1, 13):
     org_df2_2(estado, 1, i)
   primer_dia = data.index.min()
@@ -369,7 +378,7 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   segundo_dia = data[data.index > data.index.min()].index.min()
   dif = segundo_dia - primer_dia
   estado.dif = dif
-  nombrar_evento(estado, data, 'cuenca-base')
+  nombrar_evento(estado, data, 'Valor')
   contar_eventos(estado, data, 'event_QTR15', estado.listas_eventos['eventos_qtr15'], 'event_QTR15', estado.umbrales['QTR15'])
   contar_eventos(estado, data, 'event_QB', estado.listas_eventos['eventos_qb'], 'event_QTR15', estado.umbrales['QB'])
   contar_eventos(estado, data, 'event_QTQ', estado.listas_eventos['eventos_qtq'], 'event_Q10', estado.umbrales['QTQ'])
@@ -382,6 +391,7 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   for i in range(1, 13):
     print(f"empezando el {i} mes")
     calibrar_mes(estado, i)
+  estado.data_alter = estado.data_alter2
   return estado.df2, estado.data_alter2
 # cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], 1) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], 1)
 # org_df2_2(estado, 1, 1)

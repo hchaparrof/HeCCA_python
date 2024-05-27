@@ -210,7 +210,7 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
     Returns
     -------
     pandas.DataFrame
-        El DataFrame df_base procesado con los valores NaN reemplazados, si es posible.
+        El DataFrame df_base procesado con los valores NaN reemplazados, el formato de salida es index: Fecha y 'cuenca-base' para los valores de caudal
     """
   # todo lo que esta haciendo miguel
   if funcion_miguel(df_base, df_apoyo):
@@ -221,7 +221,6 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
     df_base, df_apoyo = organize_df(df_base, df_apoyo)
   else:
     df_base = organize_df(df_base)
-  # todo aquí se pone lo de miguel
   if areas is not None:
     df_base = df_base / areas[0]
     df_apoyo = df_apoyo / areas[1]
@@ -237,9 +236,10 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
   df_base = datos_anomalos(df_base, True)
   df_base = fill_data_na(df_base)
   df_return = sacar_anios(df_base)
+  # todo aquí se pone lo de miguel
   if areas is not None:
     df_return = df_return*areas[0]
-  df_return.rename(columns={'Valor': 'cuenca-base'}, inplace=True)
+  # df_return.rename(columns={'Valor': 'cuenca-base'}, inplace=True)
   return df_return
 
 

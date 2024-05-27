@@ -21,8 +21,8 @@ class EventoCompleto:
     Toma el DataFrame con los datos del evento y le
     añade la columba unbralstr en la que va a estar el excedente del caudal sobre el umbral
     """
-    self.df1 = self.df1[['cuenca-base', self.umbralstr]]
-    self.df1.loc[:, self.umbralstr] = abs(self.df1['cuenca-base'] - self.umbral)
+    self.df1 = self.df1[['Valor', self.umbralstr]]
+    self.df1.loc[:, self.umbralstr] = abs(self.df1['Valor'] - self.umbral)
 
   def set_intensidad(self):
     """Determina los parametros hidrologicos del evento, magnitud duración e intensidad"""

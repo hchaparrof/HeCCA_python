@@ -13,6 +13,7 @@ class EstadoAlgoritmo:
     self.final_dia = 1
     self.str_apoyo = ""
     self.df_month_mean = pd.DataFrame()
+    self.df_month_mean_rev = pd.DataFrame()
     #self.preparacion_comun()
 
   def preparacion_comun(self):
@@ -116,5 +117,5 @@ class EstadoAnla(EstadoAlgoritmo):
   def actualizar_caudal(self):
     self.data_alter = self.data.copy()
     for i in range(self.data_alter.size):
-      self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['cuenca-base'],
+      self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['Valor'],
                                     self.propuesta_caudal[self.data_alter.iloc[i].name.month - 1])
