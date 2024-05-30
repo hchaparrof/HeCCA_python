@@ -2,7 +2,7 @@
   "archivos": {
     "archivo_base": "C:/Users/ASUS/Desktop/datos/unal/semillero/repo_hecca/est_25027400.csv",
     "archivo_apoyo": "/ruta/archivo_apoyo.csv",
-    "archivo_enso": "C:\\Users\\ASUS\\Desktop\\datos\\unal\\semillero\\repo_hecca\\enso.json"
+    "archivo_enso": "C:\\Users\\ASUS\\Desktop\\datos\\unal\\semillero\\repo_hecca\\oni_3.csv"
   },
   "existencia_archivo_apoyo": false,
   "existencia_areas": false,
