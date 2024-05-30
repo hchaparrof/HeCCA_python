@@ -62,27 +62,54 @@ def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple
     return estado_algoritmo.EstadoAnla(base, datos[0])
 
 
-def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso: str) -> list[estado_algoritmo.EstadoAlgoritmo]:
+def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list[estado_algoritmo.EstadoAlgoritmo]:
+  meses_list = [
+    'DJF',
+    'JFM',
+    'FMA',
+    'MAM',
+    'AMJ',
+    'MJJ',
+    'JJA',
+    'JAS',
+    'ASO',
+    'SON',
+    'OND',
+    'NDJ'
+  ]
+  # Hacemos una copia profunda de los estados para cada categoría ENSO
   estado_normal = copy.deepcopy(estado)
   estado_ninio = copy.deepcopy(estado)
   estado_ninia = copy.deepcopy(estado)
-  with open(enso, 'r') as file:
-    # Leer el contenido del archivo CSV
-    datos_enso = json.load(file)
-  nino_set = set(datos_enso['ninio'])
-  nina_set = set(datos_enso['ninia'])
-  datos_nino = estado_ninio.data[estado_ninio.data.index.year.isin(nino_set)].copy()
-  datos_nina = estado_ninia.data[estado_ninia.data.index.year.isin(nina_set)].copy()
-  if datos_enso['normal'] == -1:
-    datos_normal = estado_normal.data[~(estado_normal.data.index.year.isin(nino_set) |
-                                        estado_normal.data.index.year.isin(nina_set))].copy()
-  else:
-    normal_set = set(datos_enso['normal'])
-    datos_normal = estado_normal.data[estado_normal.data.index.year.isin(normal_set)].copy()
+
+  # Leer el contenido del archivo CSV
+  datos_enso = pd.read_csv(enso_csv, index_col=0)
+
+  # Inicializar DataFrames vacíos para cada categoría
+  datos_nino = pd.DataFrame()
+  datos_nina = pd.DataFrame()
+  datos_normal = pd.DataFrame()
+
+  # Iterar sobre cada año en los datos ENSO
+  for year in datos_enso.index:
+    for month in range(1, 13):  # De enero (1) a diciembre (12)
+      enso_value = datos_enso.loc[year, meses_list[month - 1]]
+      if enso_value == -1:
+        datos_nino = pd.concat(
+          [datos_nino, estado.data[(estado.data.index.year == year) & (estado.data.index.month == month)]])
+      elif enso_value == 1:
+        datos_nina = pd.concat(
+          [datos_nina, estado.data[(estado.data.index.year == year) & (estado.data.index.month == month)]])
+      else:
+        datos_normal = pd.concat(
+          [datos_normal, estado.data[(estado.data.index.year == year) & (estado.data.index.month == month)]])
+
+  # Asignar los datos correspondientes a cada estado
   estado_normal.data = datos_normal
   estado_normal.str_apoyo = "normal"
   estado_ninio.data = datos_nino
   estado_ninio.str_apoyo = "ninio"
   estado_ninia.data = datos_nina
   estado_ninia.str_apoyo = "ninia"
+
   return [estado_normal, estado_ninia, estado_ninio]
