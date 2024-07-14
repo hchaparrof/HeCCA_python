@@ -73,6 +73,7 @@ class EstadoIdeam(EstadoAlgoritmo):
     self.df_month_mean = buscar_umbrales(self)
 
   def principal_funcion(self):
+    print("principal funcion_ideam")
     from funciones_ideam import prin_func
     prin_func(self)
     self.to_csv()
@@ -110,6 +111,7 @@ class EstadoAnla(EstadoAlgoritmo):
     self.caud_return_alterado: list = [0] * 4
 
   def principal_funcion(self):
+    print("princial_funcion_anla")
     from funciones_anla import prin_func
     prin_func(self)
     self.to_csv()

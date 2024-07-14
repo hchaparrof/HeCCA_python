@@ -161,6 +161,4 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)
   calc_normal(estado)
   calc_alterado(estado)
-  # todo lo de R
-  # todo iteracion
   return pd.DataFrame()
