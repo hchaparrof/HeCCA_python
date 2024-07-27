@@ -10,7 +10,7 @@ import concurrent.futures
 def export_resultados(array_onj: list, str_export: str) -> None:
   caudales_array: list[pd.DataFrame] = [pd.DataFrame()] * len(array_onj)
   for i, instancia in enumerate(array_onj):
-    print(f"{i}: {instancia.data}")
+    print(f"{i}: {instancia.data_alter2}", "hola_23")
     caudales_array[i] = instancia.data_alter[['Valor']]
   if caudales_array:
     df_total = pd.concat(caudales_array).sort_index().copy()
@@ -49,6 +49,7 @@ def main():
       hola += 1
     elif isinstance(obj, estado_algoritmo.EstadoAnla):
       array_anla.append(obj)
+  print("terminada_parte_multi")
   export_resultados(array_ideam, 'caudal_ambiental_ideam.csv')
   export_resultados(array_anla, 'caudal_ambiental_anla.csv')
   print("labor finalizada ")
