@@ -1,11 +1,105 @@
 import json
+from typing import Optional
+
 import pandas as pd
 import estado_algoritmo
 from limpieza_datos import process_df, ErrorFecha
 import copy
 
 
-def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
+def ejecutar_algoritmo_ruta(ruta_json: str) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
+  with open(ruta_json, "r") as archivo_json:
+    datos = json.load(archivo_json)
+  return generar_algoritmo(datos)
+
+
+def procesar_datos(base: pd.DataFrame, apoyo: Optional[pd.DataFrame] = None,
+                   areas: Optional[list] = None) -> Optional[pd.DataFrame]:
+  try:
+    df_limpio = process_df(base, apoyo, areas)
+  except ErrorFecha as e:
+    print(e)
+    return None
+  return df_limpio
+
+
+def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_algoritmo.EstadoAlgoritmo]:
+  objetos_estado = []
+  if datos['organismo'] == 'anla':
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base']))
+
+  elif datos['organismo'] == 'ideam':
+    extremos = []
+    minimo_prov = None
+    maximo_prov = None
+    if datos['archivos']['archivo_maximos'] == -1 and datos['archivos']['archivo_minimos'] == -1:
+      extremos = None
+    if datos['archivos']['archivo_maximos'] != -1:
+      try:
+        maximo_prov: Optional[pd.DataFrame] = pd.read_csv(datos['archivos']['archivo_maximos'])
+        maximo_prov = (procesar_datos(base=maximo_prov))
+      except ValueError:
+        maximo_prov = None
+      except:
+        print("otro_error_lectura_maximos")
+        maximo_prov = None
+      finally:
+        pass
+    if datos['archivos']['archivo_minimos'] != -1:
+      try:
+        minimo_prov: Optional[pd.DataFrame] = pd.read_csv(datos['archivos']['archivo_minimos'])
+        minimo_prov = (procesar_datos(base=maximo_prov))
+      except ValueError:
+        minimo_prov = None
+      except:
+        print("otro_error_lectura_minimos")
+      finally:
+        pass
+    extremos.append(minimo_prov)
+    extremos.append(maximo_prov)
+    if datos['existencia_umbrales']:
+      objetos_estado.append(
+        estado_algoritmo.EstadoIdeam(df_limpio, datos, extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
+    else:
+      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base']))
+
+  elif datos['organismo'] == 'ambas':
+    # Crear objeto para 'anla'
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base']))
+    # Crear objeto para 'ideam'
+    if datos['existencia_umbrales']:
+      objetos_estado.append(
+        estado_algoritmo.EstadoIdeam(df_limpio, datos))  # ['archivos']['archivo_base'], datos['umbrales']))
+    else:
+      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base']))
+
+  return objetos_estado
+
+
+def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
+  base = pd.read_csv(datos['archivos']['archivo_base'])
+  apoyo = pd.read_csv(datos['archivo_apoyo']) if datos['existencia_archivo_apoyo'] else None
+  areas = datos['areas'] if datos['existencia_areas'] else None
+
+  df_limpio = procesar_datos(base, apoyo, areas)
+  if df_limpio is None:
+    return None
+
+  objeto_base = crear_objeto_estado(df_limpio, datos)
+
+  if datos["existencia_enso"]:
+    if len(objeto_base) == 2:
+      return (crear_lista(objeto_base[0], datos['archivos']['archivo_enso']) +
+              crear_lista(objeto_base[1], datos['archivos']['archivo_enso']))
+    elif len(objeto_base) == 1:
+      return crear_lista(objeto_base[0], datos['archivos']['archivo_enso'])
+    else:
+      return None
+
+  return objeto_base
+
+
+def generar_algoritmo_json() -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
   with open("setup.json", "r") as archivo_json:
     datos = json.load(archivo_json)
     base = pd.read_csv(datos['archivos']['archivo_base'])
@@ -25,9 +119,9 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
     objeto_base: estado_algoritmo.EstadoAlgoritmo
     if datos['organismo'] == 'anla':
       objeto_base = estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'])
-    else:
+    elif datos['organismo'] == 'ideam':
       if datos['existencia_umbrales']:
-        objeto_base = estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base'], datos['umbrales'])
+        objeto_base = estado_algoritmo.EstadoIdeam(df_limpio, datos)  # ['archivos']['archivo_base'], datos['umbrales'])
       else:
         objeto_base = estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base'])
     if datos["existencia_enso"]:
@@ -37,29 +131,29 @@ def generar_algoritmo_json() -> list[estado_algoritmo.EstadoAlgoritmo] | None:
 # todo esta funcion no esta actualizada como la otra
 
 
-def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple = (None, None),
-                         organismo: str = "ideam", enso: tuple = None) -> estado_algoritmo.EstadoAlgoritmo | None:
-  apoyo = None
-  try:
-    base = pd.read_csv(datos[0])
-  except FileNotFoundError:
-    print("No hay ningun archivo base")
-    return None
-  if enso is not None:
-    # todo lo que es de Enso
-    pass
-  if len(datos) > 1:
-    # si hay apoyo
-    try:
-      apoyo = pd.read_csv(datos[1])
-    except FileNotFoundError:
-      print("No hay ningun archivo de apoyo")
-      apoyo = None
-  base = process_df(base, apoyo, areas)
-  if organismo == "ideam":
-    return estado_algoritmo.EstadoIdeam(base, datos[0], umbrales)
-  elif organismo == "anla":
-    return estado_algoritmo.EstadoAnla(base, datos[0])
+# def generar_algoritmo_fn(datos: (str, str), areas: tuple = None, umbrales: tuple = (None, None),
+#                          organismo: str = "ideam", enso: tuple = None) -> estado_algoritmo.EstadoAlgoritmo | None:
+#   apoyo = None
+#   try:
+#     base = pd.read_csv(datos[0])
+#   except FileNotFoundError:
+#     print("No hay ningun archivo base")
+#     return None
+#   if enso is not None:
+#     # todo lo que es de Enso
+#     pass
+#   if len(datos) > 1:
+#     # si hay apoyo
+#     try:
+#       apoyo = pd.read_csv(datos[1])
+#     except FileNotFoundError:
+#       print("No hay ningun archivo de apoyo")
+#       apoyo = None
+#   base = process_df(base, apoyo, areas)
+#   if organismo == "ideam":
+#     return estado_algoritmo.EstadoIdeam(base, datos[0], umbrales)
+#   elif organismo == "anla":
+#     return estado_algoritmo.EstadoAnla(base, datos[0])
 
 
 def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list[estado_algoritmo.EstadoAlgoritmo]:

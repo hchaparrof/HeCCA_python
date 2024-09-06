@@ -188,8 +188,36 @@ def procesar_archivos_csv(csv_folder, json_file):
 
             plt.show()
 
-# Ejemplo de llamada a la función
-csv_folder = 'estaciones_consistencia_csv'
-json_file = 'enso.json'
+def homogeneidad_helmert(df: pd.DataFrame) -> bool:
+  datos_usables_anuales  = df.groupby(df.index.year).mean()
+  promedio_anual = datos_usables_anuales['Valor'].mean()
+  datos_usables_anuales['mayor_promedio'] = (datos_usables_anuales['Valor'] > promedio_anual).astype(int)
+  datos_usables_anuales['helmert'] = np.nan
+  for i in range(1, datos_usables_anuales.index.size):
+    if datos_usables_anuales.iat[i,1] == datos_usables_anuales.iat[i-1,1]:
+      datos_usables_anuales.iat[i, 2] = 1
+    else:
+      datos_usables_anuales.iat[i, 2] = -1
+  suma_de_helmert = datos_usables_anuales['helmert'].sum()
+  otro_dato = np.sqrt(datos_usables_anuales.index.size-1)
+  return suma_de_helmert < otro_dato
 
-procesar_archivos_csv(csv_folder, json_file)
+def homogeneidad_kendall(df: pd.DataFrame) -> bool:
+  VCRITICA = 1.64
+  datos_usables_anuales = df.groupby(df.index.year).mean()
+  datos_usables_anuales['SI'] = np.nan
+  datos_usables_anuales['TI'] = np.nan
+  for i in range( datos_usables_anuales.index.size):
+    valor_inicial = datos_usables_anuales.iat[i, 0]
+    datos_usables_anuales.iat[i, 1] = datos_usables_anuales[datos_usables_anuales['Valor'] > valor_inicial].index.size
+    datos_usables_anuales.iat[i, 2] = datos_usables_anuales[datos_usables_anuales['Valor'] < valor_inicial].index.size
+  sum_si = datos_usables_anuales['SI'].sum()
+  sum_ti = datos_usables_anuales['TI'].sum()
+  s_mayor = sum_si - sum_ti
+  return s_mayor < VCRITICA
+
+# Ejemplo de llamada a la función
+# csv_folder = 'estaciones_consistencia_csv'
+# json_file = 'enso.json'
+#
+# procesar_archivos_csv(csv_folder, json_file)

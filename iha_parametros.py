@@ -21,11 +21,11 @@ def Setdata(file_path):
   start_year = data['Year'].min()
   end_year = data['Year'].max()
   return data, start_year, end_year
-
-
+def set_data_2(df: pd.DataFrame):
+  pass
 def Iha_parameter1(data, start_year, end_year):
   """Parametros Grupo_1 calculo de la media a partir de los caudales diarios para los 12 meses de cada año"""
-  from datetime import datetime, timedelta
+  # from datetime import datetime, timedelta
   """Se crea el dataframe donde se guardaran los parametros del grupo 1"""
   Group1_IHA = pd.DataFrame(index=range(1, 13), columns=range(start_year, end_year+1))
   """Se crea el rango de fechas para el año"""
@@ -37,7 +37,7 @@ def Iha_parameter1(data, start_year, end_year):
         Group1_IHA.loc[month, year] = mean_value
       else:
         Group1_IHA.loc[month, year] = np.nan
-  return Group1_IHA
+  return Group1_IHA.mean(axis=1)
 
 
 def Iha_parameter2(data, start_year, end_year):
@@ -63,7 +63,7 @@ def Iha_parameter2(data, start_year, end_year):
     Group2_IHA.loc[7, year] = np.mean(Sorted_Yearly[-7:])   # Caudal anual máximo 7 dia
     Group2_IHA.loc[8, year] = np.mean(Sorted_Yearly[-30:])  # Caudal anual máximo 30 dia
     Group2_IHA.loc[9, year] = np.mean(Sorted_Yearly[-90:])  # Caudal anual máximo 90 dia
-  return Group2_IHA
+  return Group2_IHA.mean(axis=1)
 
 
 def Iha_parameter3(data, start_year, end_year):
@@ -82,6 +82,7 @@ def Iha_parameter3(data, start_year, end_year):
     Group3_IHA.loc['Julian_date_max', f'Year_{year}'] = np.ceil(INDXmax.mean())
     Group3_IHA.loc['Julian_date_min', f'Year_{year}'] = np.ceil(INDXmin.mean())
   return Group3_IHA
+  # return Group3_IHA.mean(axis=1)
 
 
 """Frecuencia y duración de pulsos altos y bajos de caudal
@@ -123,7 +124,7 @@ def Iha_parameter4(data, start_year, end_year):
     Group4_IHA.loc['High_pulse_duration', f'Year_{year}'] = high_pulse_duration
     Group4_IHA.loc['Low_pulse_duration', f'Year_{year}'] = low_pulse_duraiton
 
-  return Group4_IHA
+  return Group4_IHA.mean(axis=1)
 
 
 def Ihaparameter5(data):
@@ -149,4 +150,4 @@ def Ihaparameter5(data):
     Group5_IHA.at['Num_Falls', year] = len(Negativ_diff_val)  # Número de caidas
     Group5_IHA.at['Mean_Neg_Diff', year] = np.mean(Negativ_diff_val) if len(Negativ_diff_val) > 0 else np.nan  # Media de diferencias negativas
 
-  return Group5_IHA
+  return Group5_IHA.mean(axis=1)

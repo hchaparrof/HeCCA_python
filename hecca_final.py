@@ -4,7 +4,8 @@
 import pandas as pd
 import ingreso_datos
 import estado_algoritmo
-import concurrent.futures
+from typing import Optional
+# import concurrent.futures
 
 
 def export_resultados(array_onj: list, str_export: str) -> None:
@@ -25,19 +26,19 @@ def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
 
 def main():
 
-  instancia_algoritmo: list[estado_algoritmo.EstadoAlgoritmo] | None = ingreso_datos.generar_algoritmo_json()
+  instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  # ingreso_datos.generar_algoritmo_json()
   if instancia_algoritmo is None:
     print("Error en el proceso")
     return
-  # for instance in instancia_algoritmo:
-  #   instance.principal_funcion()
+  for instance in instancia_algoritmo:
+    instance.principal_funcion()
   print(len(instancia_algoritmo))
-  with concurrent.futures.ProcessPoolExecutor() as executor:
-    # print("Executando...")
-    try:
-      resultados = executor.map(ejecutar_funcion, instancia_algoritmo)
-    except Exception as e:
-      print(f"Exception occurred: {e}")
+  # with concurrent.futures.ProcessPoolExecutor() as executor:
+  #   # print("Executando...")
+  #   try:
+  #     resultados = executor.map(ejecutar_funcion, instancia_algoritmo)
+  #   except Exception as e:
+  #     print(f"Exception occurred: {e}")
   print("hola")
   array_ideam: list[estado_algoritmo.EstadoIdeam] = []
   array_anla: list[estado_algoritmo.EstadoAnla] = []

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
@@ -14,9 +16,9 @@ class EstadoAlgoritmo:
     self.str_apoyo = ""
     self.df_month_mean = pd.DataFrame()
     self.df_month_mean_rev = pd.DataFrame()
-    #self.preparacion_comun()
+    # self.preparacion_comun()
 
-  def preparacion_comun(self):
+  def preparacion_comun(self, *args):
     pass
 
   def principal_funcion(self):
@@ -36,8 +38,19 @@ class EstadoAlgoritmo:
 
 
 class EstadoIdeam(EstadoAlgoritmo):
-  def __init__(self, data_inicial, ruta_m: str, h_umbrales=(None, None)):
-    super().__init__(data_inicial, ruta_m)
+  def __init__(self, data_inicial: pd.DataFrame, data_dict: dict,
+               extremos: list[Optional[pd.DataFrame]] = None):  # ruta_m: str, h_umbrales=(None, None)):
+    super().__init__(data_inicial, data_dict['archivos']['archivo_base'])
+    if extremos is None:
+      self.data_max = None
+      self.data_min = None
+    else:
+      self.data_min: pd.DataFrame = extremos[0]
+      self.data_max: pd.DataFrame = extremos[1]
+    if data_dict['umbrales'] == -1:
+      h_umbrales = (None, None)
+    else:
+      h_umbrales = data_dict['umbrales']
     self.data_alter = pd.DataFrame()
     self.data_alter2 = pd.DataFrame()
     self.umbrales = {
@@ -68,6 +81,7 @@ class EstadoIdeam(EstadoAlgoritmo):
     }
     self.porcentajes = np.empty(12)
     self.preparacion_comun()
+
   def preparacion_comun(self):
     from funciones_ideam import buscar_umbrales
     self.df_month_mean = buscar_umbrales(self)

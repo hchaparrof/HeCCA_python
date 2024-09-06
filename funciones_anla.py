@@ -40,9 +40,9 @@ def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
                                      np.abs(gumball_corr), np.abs(pearson_corr),
                                      np.abs(weibull_corr))
   if ajuste_seleccionado == 1:
-    return norm.ppf(prob_ret, loc=mun, scale=stdn)  # 84.08149197181189
+    return norm.ppf(prob_ret, loc=mun, scale=stdn)
   elif ajuste_seleccionado == 2:
-    return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])  # 84.08149197181189
+    return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])
   elif ajuste_seleccionado == 3:
     return gumbel_r.ppf(prob_ret, loc=mug, scale=beta)
   elif ajuste_seleccionado == 4:

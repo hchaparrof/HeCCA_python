@@ -19,7 +19,7 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
       el dataframe con los minimos y promedios revisados
       los umbrales se guardan en las variables globales
     """
-  print("hola_0.5")
+  # print("hola_0.5")
   data = estado.data
   # print(data)
   u_qb = 2.33
@@ -34,8 +34,12 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   df = pd.DataFrame()
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None)
+  # minimos
+  if estado.data_min is None:
   # se crea un dataframe en donde se calculan los minimos máximos y promedio por mes y año
-  grouped = data.groupby([data.index.year, data.index.month])
+    grouped = data.groupby([data.index.year, data.index.month])
+  else:
+    grouped = estado.data_min.groupby([estado.data_min.index.year, estado.data_min.index.month])
   for group, data_filter in grouped:
     year, month = group
     row = [f"{year}-{month}", data_filter['Valor'].min(), data_filter['Valor'].max(),
@@ -48,15 +52,15 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   se crea listas con n valores, siendo n el número de años en el dataset, guardando el máximo y minimo por año
   '''
   mins = df.groupby(df.index.year)['Min'].min()
-  maxs = df.groupby(df.index.year)['Max'].max()
+  # maxs = df.groupby(df.index.year)['Max'].max()
   mins = np.array(mins)
-  maxs = np.array(maxs)
+  # maxs = np.array(maxs)
   # print(mins, maxs, "hola_mins")
   mean_min = (mins.mean())
   std_min = (np.std(mins, ddof=1))  # desviacion estandar
   coef_variacion_min = std_min / mean_min
-  mean_max = (maxs.mean())
-  std_max = (np.std(maxs, ddof=1))
+  # mean_max = (maxs.mean())
+  # std_max = (np.std(maxs, ddof=1))
   alpha_min = 1.0079 * (coef_variacion_min ** -1.084)
   a_alpha_min = (-0.0607 * (coef_variacion_min ** 3)) + (0.5502 * (coef_variacion_min ** 2)) - (
             0.4937 * coef_variacion_min) + 1.003
@@ -67,11 +71,15 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   umbral_Q10 = beta * ((-np.log(1 - (1 / 10))) ** (1 / alpha_min))
   #
   #
+  #### maximos
   df = pd.DataFrame()  # crea un dataframe donde poner los minimos y maximos por mes de toda la serie
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None, Min_rev=None)
   # calculate mim, max, mean, min_rev and mean_rev
-  grouped = data.groupby([data.index.year, data.index.month])
+  if estado.data_max is None:
+    grouped = data.groupby([data.index.year, data.index.month])
+  else:
+    grouped = estado.data_max.groupby([estado.data_max.index.year, estado.data_max.index.month])
   for group, data_filter in grouped:
     year, month = group
     min_value = data_filter['Valor'].min()
@@ -80,6 +88,10 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
     min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value]
     df.loc[len(df)] = row
+  maxs = df.groupby(df.index.year)['Max'].max()
+  maxs = np.array(maxs)
+  mean_max = (maxs.mean())
+  std_max = (np.std(maxs, ddof=1))
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   # df = df.set_index('Fecha')
   alpha_max = (np.sqrt(6) * std_max) / np.pi
@@ -319,7 +331,7 @@ def formar_alter(estado: EstadoIdeam):
   data_alter2.rename(columns={'Q_ambiental': 'Valor'}, inplace=True)
   estado.data_alter = data_alter
   estado.data_alter2 = data_alter2
-  print
+  # print
 
 
 def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
