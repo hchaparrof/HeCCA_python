@@ -81,11 +81,11 @@ def normal_distr(x_normal, mun_normal, stdn_normal) -> float:
 
 
 def calcular_7q10(df_completo: pd.DataFrame) -> list:
-  '''
+  """
   Calcula los 7q10
   @param df_completo:
   @return: lista 12 7q10 por mes
-  '''
+  """
 
   promedio_7_dias: pd.DataFrame = df_completo.rolling(7).mean()
   df: pd.DataFrame = promedio_7_dias.groupby(promedio_7_dias.index.year)['Valor'].min()
@@ -125,7 +125,7 @@ def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
   estado.data_alterado = estado.data.copy()
   for index, row in estado.data_alterado.iterrows():
     month: int = row.name.month - 1
-    estado.data_alterado.at[index, 'Valor'] = min(row['Valor'], estado.propuesta_caudal[month])
+    estado.data_alterado.at[index, 'Valor'] = min(row['Valor'], estado.propuesta_inicial_ref[month])
   estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
   estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
                                    estado.df_cdc_alterada['Valor'])
@@ -158,7 +158,7 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.df_month_mean = general_month_mean(estado.data)
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
-  estado.propuesta_caudal = np.minimum(estado.q7_10, estado.q95)
+  estado.propuesta_inicial_ref = np.minimum(estado.q7_10, estado.q95)
   calc_normal(estado)
   calc_alterado(estado)
   return pd.DataFrame()

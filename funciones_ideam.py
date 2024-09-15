@@ -124,12 +124,12 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   # print(df)
   if cambiar_umbrales:
     estado.umbrales['QTR15'] = umbral_Q15
-    estado.umbralesQB = umbral_QB
-    estado.QTR10 = umbral_Q10
-    estado.QTQ = umbral_QTQ
+    estado.umbrales['QB'] = umbral_QB
+    estado.umbrales['QTR10'] = umbral_Q10
+    estado.umbrales['QTQ'] = umbral_QTQ
     if not estado.h_umbrales['QB'] is None:
-      estado.umbralesQB = estado.h_umbrales[0]
-      estado.QTQ = estado.h_umbrales[1]
+      estado.umbrales['QB'] = estado.h_umbrales[0]
+      estado.umbrales['QTQ'] = estado.h_umbrales[1]
     if estado.h_umbrales is not None:
       estado.setear_umbrales([umbral_Q15, umbral_QB, umbral_QTQ, umbral_Q10])
   return df

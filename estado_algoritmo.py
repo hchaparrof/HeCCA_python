@@ -112,7 +112,7 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   def __init__(self, data_inicial, ruta_m: str):
     super().__init__(data_inicial, ruta_m)
-    self.propuesta_caudal: list = [0] * 12
+    self.propuesta_inicial_ref: list = [0] * 12
     self.q95: list = [0]*12
     self.q7_10: list = [0]*12
     self.df_cdc_normal: pd.DataFrame = pd.DataFrame()
@@ -134,4 +134,4 @@ class EstadoAnla(EstadoAlgoritmo):
     self.data_alter = self.data.copy()
     for i in range(self.data_alter.size):
       self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['Valor'],
-                                    self.propuesta_caudal[self.data_alter.iloc[i].name.month - 1])
+                                    self.propuesta_inicial_ref[self.data_alter.iloc[i].name.month - 1])
