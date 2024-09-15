@@ -55,13 +55,18 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
         print("otro_error_lectura_minimos")
       finally:
         pass
-    extremos.append(minimo_prov)
-    extremos.append(maximo_prov)
+    try:
+      extremos.append(minimo_prov)
+      extremos.append(maximo_prov)
+    except AttributeError:
+      pass
+    finally:
+      pass
     if datos['existencia_umbrales']:
       objetos_estado.append(
         estado_algoritmo.EstadoIdeam(df_limpio, datos, extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
     else:
-      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base']))
+      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos))
 
   elif datos['organismo'] == 'ambas':
     # Crear objeto para 'anla'

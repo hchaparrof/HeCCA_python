@@ -25,7 +25,6 @@ def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
 
 
 def main():
-
   instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  # ingreso_datos.generar_algoritmo_json()
   if instancia_algoritmo is None:
     print("Error en el proceso")

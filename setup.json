@@ -6,7 +6,7 @@
     "archivo_apoyo": -1,
     "archivo_enso": "C:\\Users\\ASUS\\Desktop\\datos\\unal\\semillero\\repo_hecca\\oni_3.csv"
   },
-  "existencia_enso": true,
+  "existencia_enso": false,
   "areas": -1,
   "umbrales": -1,
   "estacion_hidrologica": "Nombre_de_la_estacion",

@@ -88,11 +88,13 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
     min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value]
     df.loc[len(df)] = row
+  df['Fecha'] = pd.to_datetime(df['Fecha'])
+  df = df.set_index('Fecha')
   maxs = df.groupby(df.index.year)['Max'].max()
   maxs = np.array(maxs)
   mean_max = (maxs.mean())
   std_max = (np.std(maxs, ddof=1))
-  df['Fecha'] = pd.to_datetime(df['Fecha'])
+  # df['Fecha'] = pd.to_datetime(df['Fecha'])
   # df = df.set_index('Fecha')
   alpha_max = (np.sqrt(6) * std_max) / np.pi
   u_max = mean_max - (0.5772 * alpha_max)

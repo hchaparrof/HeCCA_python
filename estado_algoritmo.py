@@ -40,6 +40,7 @@ class EstadoAlgoritmo:
 class EstadoIdeam(EstadoAlgoritmo):
   def __init__(self, data_inicial: pd.DataFrame, data_dict: dict,
                extremos: list[Optional[pd.DataFrame]] = None):  # ruta_m: str, h_umbrales=(None, None)):
+    print(data_dict)
     super().__init__(data_inicial, data_dict['archivos']['archivo_base'])
     if extremos is None:
       self.data_max = None
