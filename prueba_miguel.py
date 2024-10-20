@@ -11,7 +11,7 @@ MY_DICT = {
     "archivo_maximos": -1,
     "archivo_minimos": -1,
     "archivo_apoyo": -1,
-    "archivo_enso": "C:\\Users\\ASUS\\Desktop\\datos\\unal\\semillero\\repo_hecca\\oni_3.csv"
+    "archivo_enso": -1
   },
   "existencia_enso": False,
   "areas": -1,

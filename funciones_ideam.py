@@ -35,7 +35,7 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None)
   # minimos
-  if estado.data_min is None:
+  if estado.data_min.empty:
   # se crea un dataframe en donde se calculan los minimos máximos y promedio por mes y año
     grouped = data.groupby([data.index.year, data.index.month])
   else:
@@ -76,7 +76,7 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   # set columns
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None, Min_rev=None)
   # calculate mim, max, mean, min_rev and mean_rev
-  if estado.data_max is None:
+  if estado.data_max.empty:
     grouped = data.groupby([data.index.year, data.index.month])
   else:
     grouped = estado.data_max.groupby([estado.data_max.index.year, estado.data_max.index.month])

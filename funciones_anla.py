@@ -1,7 +1,11 @@
-import pandas as pd
-import estado_algoritmo
+from collections.abc import Sequence
+
 import numpy as np
+import pandas as pd
 from scipy.stats import norm, lognorm, gumbel_r, pearson3, weibull_min
+
+import estado_algoritmo
+from IhaEstado import IhaEstado
 
 
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
@@ -114,26 +118,41 @@ def generar_cdc(datos: pd.DataFrame) -> pd.DataFrame:
   return ordenados_2
 
 
-def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
-  estado.df_cdc_normal = generar_cdc(estado.data)
-  estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
-                                  estado.df_cdc_alterada['Valor'])
-  estado.caud_return_normal = caud_retorn_anla(estado.data, estado.anios_retorn)
+# def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
+#   estado.df_cdc_normal = generar_cdc(estado.data)
+#   estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
+#                                   estado.df_cdc_alterada['Valor'])
+#   estado.caud_return_normal = caud_retorn_anla(estado.data, estado.anios_retorn)
 
 
-def calc_alterado(estado: estado_algoritmo.EstadoAnla) -> None:
-  estado.data_alterado = estado.data.copy()
-  for index, row in estado.data_alterado.iterrows():
+def calc_resultados(datos: pd.DataFrame) -> estado_algoritmo.ResultadosAnla:
+  cdc: pd.DataFrame = generar_cdc(datos)
+  cdc_anios: np.ndarray = np.interp(estado_algoritmo.EstadoAnla.cdc_umbrales, cdc['cumsum'],
+                                    cdc['Valor'])
+  anios_retorno: list[float] = caud_retorn_anla(datos, estado_algoritmo.EstadoAnla.anios_retorn)
+  resultados_iha: IhaEstado = IhaEstado(datos)
+  resultados_iha.calcular_iha()
+  resultados: estado_algoritmo.ResultadosAnla = estado_algoritmo.ResultadosAnla(cdc=cdc, cdc_anios=cdc_anios,
+                                                                                caud_return=anios_retorno,
+                                                                                iah_result=resultados_iha)
+  return resultados
+
+
+def recortar_caudal(serie: pd.DataFrame, caudales: Sequence[float]) -> pd.DataFrame:
+  data_alterado = serie.copy()
+  for index, row in data_alterado.iterrows():
     month: int = row.name.month - 1
-    estado.data_alterado.at[index, 'Valor'] = min(row['Valor'], estado.propuesta_inicial_ref[month])
-  estado.df_cdc_alterada = generar_cdc(estado.data_alterado)
-  estado.cdc_alterados = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_alterada['cumsum'],
-                                   estado.df_cdc_alterada['Valor'])
-  estado.caud_return_alterado = caud_retorn_anla(estado.data_alter, estado.anios_retorn)
-  estado.df_month_mean_rev = general_month_mean(estado.data_alterado)
+    data_alterado.at[index, 'Valor'] = min(row['Valor'], caudales[month])
+  return data_alterado
 
 
-def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list:
+def calc_alterado(data: pd.DataFrame, caudales) -> (pd.DataFrame, estado_algoritmo.ResultadosAnla):
+  data_alterado = recortar_caudal(data, caudales)
+  calc_resultados(data_alterado)
+  return data_alterado, estado_algoritmo.ResultadosAnla
+
+
+def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list[float]:
   resultado: list = [0] * len(anios)
   for i in anios:
     resultado[i] = calc_caud_retor(df, anios[i])
@@ -154,11 +173,49 @@ def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
   return df
 
 
+# @dataclass
+# class ResultadosAnla:
+#   cdc: pd.DataFrame
+#   cdc_anios: np.ndarray
+#   caud_return: list[float]
+#   iah_result: IhaEstado.IhaEstado
+
+def dividir_resultados(resultados_natural: estado_algoritmo.ResultadosAnla,
+                       resultados_otro: estado_algoritmo.ResultadosAnla) -> list:
+  resultados_cdc: list[float] = []
+  resultados_retorno: list[float] = []
+  for a, b in zip(resultados_natural.cdc_anios, resultados_otro.cdc_anios):
+    resultados_cdc.append(b / a)
+    pass
+  for a, b in zip(resultados_natural.caud_return, resultados_otro.caud_return):
+    resultados_retorno.append(b / a)
+  resultados_iha: list[float] = resultados_natural.iah_result - resultados_otro.iah_result
+  return list[resultados_cdc, resultados_retorno, resultados_iha]
+  # < 0.5 cdc con y sin proyecto
+  # > 0.6 periodos de retorno
+  # umbrales es media mas o menos desviación estandar caudal natural
+  pass
+
+
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
+  # calculo elementos iniciales
   estado.df_month_mean = general_month_mean(estado.data)
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
   estado.propuesta_inicial_ref = np.minimum(estado.q7_10, estado.q95)
-  calc_normal(estado)
-  calc_alterado(estado)
+  # calculo estado normal
+  estado.resultados_ori = calc_resultados(estado.data)
+  # calculo estado referencia
+  estado.data_ref, estado.resultados_ref = calc_alterado(estado.data, estado.propuesta_inicial_ref)
+  # calibracion estado objetivo
+  for i in range(2000):
+    # cambiar los caudales, puede ser algoritmos geneticos o minimize o algo así
+    # estado.caud_final = alguna cosa aquí
+    estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, estado.caud_final)
+    resultados_prov = comparar_resultados(estado.resultados_ori, estado.resultados_alterada)
+    # comparar los resultados
+    # eso es complicado
   return pd.DataFrame()
+def comparar_resultados(a, b):
+  # todo
+  return a

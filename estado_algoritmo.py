@@ -1,7 +1,10 @@
+from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
 import pandas as pd
+
+import IhaEstado
 
 
 class EstadoAlgoritmo:
@@ -39,15 +42,16 @@ class EstadoAlgoritmo:
 
 class EstadoIdeam(EstadoAlgoritmo):
   def __init__(self, data_inicial: pd.DataFrame, data_dict: dict,
-               extremos: list[Optional[pd.DataFrame]] = None):  # ruta_m: str, h_umbrales=(None, None)):
-    print(data_dict)
+               extremos: list[Optional[pd.DataFrame]] = None):
+    # print(data_dict)
     super().__init__(data_inicial, data_dict['archivos']['archivo_base'])
-    if extremos is None:
-      self.data_max = None
-      self.data_min = None
+    print(extremos)
+    if extremos:
+      pass
     else:
-      self.data_min: pd.DataFrame = extremos[0]
-      self.data_max: pd.DataFrame = extremos[1]
+      extremos = [pd.DataFrame(), pd.DataFrame()]
+    self.data_min: pd.DataFrame = extremos[0]
+    self.data_max: pd.DataFrame = extremos[1]
     if data_dict['umbrales'] == -1:
       h_umbrales = (None, None)
     else:
@@ -111,19 +115,24 @@ class EstadoIdeam(EstadoAlgoritmo):
 
 
 class EstadoAnla(EstadoAlgoritmo):
+  cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
+  anios_retorn: list = [2, 5, 10, 25]
   def __init__(self, data_inicial, ruta_m: str):
     super().__init__(data_inicial, ruta_m)
-    self.propuesta_inicial_ref: list = [0] * 12
+    self.data_ref: pd.DataFrame = pd.DataFrame()
+    self.propuesta_inicial_ref: list[float] = [0] * 12
+    self.caud_final: list[float] = [0] * 12
     self.q95: list = [0]*12
     self.q7_10: list = [0]*12
     self.df_cdc_normal: pd.DataFrame = pd.DataFrame()
     self.df_cdc_alterada: pd.DataFrame = pd.DataFrame()
-    self.cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
-    self.anios_retorn: list = [2, 5, 10, 25]
     self.cdc_normales: list = [0]*8
     self.cdc_alterados: list = [0]*8
     self.caud_return_normal: list = [0]*4
     self.caud_return_alterado: list = [0] * 4
+    self.resultados_ori: ResultadosAnla
+    self.resultados_alterada: ResultadosAnla
+    self.resultados_ref: ResultadosAnla
 
   def principal_funcion(self):
     print("princial_funcion_anla")
@@ -136,3 +145,12 @@ class EstadoAnla(EstadoAlgoritmo):
     for i in range(self.data_alter.size):
       self.data_alter.iloc[i] = min(self.data_alter.iloc[i]['Valor'],
                                     self.propuesta_inicial_ref[self.data_alter.iloc[i].name.month - 1])
+
+
+# ////
+@dataclass
+class ResultadosAnla:
+  cdc: pd.DataFrame
+  cdc_anios: np.ndarray
+  caud_return: list[float]
+  iah_result: IhaEstado.IhaEstado
