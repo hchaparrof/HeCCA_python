@@ -35,7 +35,7 @@ class EstadoAlgoritmo:
       nuevo_nombre = nombre + "_arreglado_" + self.str_apoyo + "." + extension
       return nuevo_nombre
 
-    print("hola")
+    # print("hola")
     self.df2.to_csv(modificar_nombre_archivo(self.ruta))
     # self.data_alter.to_csv(self.str_apoyo)
 
@@ -45,7 +45,7 @@ class EstadoIdeam(EstadoAlgoritmo):
                extremos: list[Optional[pd.DataFrame]] = None):
     # print(data_dict)
     super().__init__(data_inicial, data_dict['archivos']['archivo_base'])
-    print(extremos)
+    # print(extremos)
     if extremos:
       pass
     else:
@@ -92,7 +92,7 @@ class EstadoIdeam(EstadoAlgoritmo):
     self.df_month_mean = buscar_umbrales(self)
 
   def principal_funcion(self):
-    print("principal funcion_ideam")
+    # print("principal funcion_ideam")
     from funciones_ideam import prin_func
     prin_func(self)
     self.to_csv()
@@ -135,7 +135,7 @@ class EstadoAnla(EstadoAlgoritmo):
     self.resultados_ref: ResultadosAnla
 
   def principal_funcion(self):
-    print("princial_funcion_anla")
+    # print("princial_funcion_anla")
     from funciones_anla import prin_func
     prin_func(self)
     self.to_csv()

@@ -90,7 +90,8 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
         pass
     if datos['existencia_umbrales']:
       objetos_estado.append(
-        estado_algoritmo.EstadoIdeam(df_limpio, datos, extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
+        estado_algoritmo.EstadoIdeam(df_limpio, datos,
+                                     extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
     else:
       objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos))
 
@@ -110,12 +111,13 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
 def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
   """
   Toma un diccionario valido de configuración y retorna una lista de instancias del algoritmo a ejecutar
-  @param datos (dict): diccionario de configuración valido
+  @param datos:
   @return: list[estado_algoritmo.EstadoAlgoritmo] lista de las instancias del algoritmo a ejecutar
   """
   base = pd.read_csv(datos['archivos']['archivo_base'])
-  apoyo = pd.read_csv(datos['archivo_apoyo']) if (datos['existencia_archivo_apoyo'] != -1) else None
-  areas = datos['areas'] if (datos['existencia_areas'] !=-1) else None
+  # print(datos)
+  apoyo = pd.read_csv(datos['archivos']['archivo_apoyo']) if (datos['archivos']['archivo_apoyo'] != -1) else None
+  areas = datos['areas'] if (datos['areas'] != -1) else None
 
   df_limpio = procesar_datos(base, apoyo, areas)
   if df_limpio is None:
@@ -165,7 +167,6 @@ def generar_algoritmo_json() -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]
     return [objeto_base]
 
 
-
 def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list[estado_algoritmo.EstadoAlgoritmo]:
   meses_list = [
     'DJF',
@@ -185,15 +186,12 @@ def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list
   estado_normal = copy.deepcopy(estado)
   estado_ninio = copy.deepcopy(estado)
   estado_ninia = copy.deepcopy(estado)
-
   # Leer el contenido del archivo CSV
   datos_enso = pd.read_csv(enso_csv, index_col=0)
-
   # Inicializar DataFrames vacíos para cada categoría
   datos_nino = pd.DataFrame()
   datos_nina = pd.DataFrame()
   datos_normal = pd.DataFrame()
-
   # Iterar sobre cada año en los datos ENSO
   for year in datos_enso.index:
     for month in range(1, 13):  # De enero (1) a diciembre (12)
@@ -207,7 +205,6 @@ def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list
       else:
         datos_normal = pd.concat(
           [datos_normal, estado.data[(estado.data.index.year == year) & (estado.data.index.month == month)]])
-
   # Asignar los datos correspondientes a cada estado
   estado_normal.data = datos_normal
   estado_normal.str_apoyo = "normal"
@@ -215,5 +212,4 @@ def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list
   estado_ninio.str_apoyo = "ninio"
   estado_ninia.data = datos_nina
   estado_ninia.str_apoyo = "ninia"
-
   return [estado_normal, estado_ninia, estado_ninio]

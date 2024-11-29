@@ -1,12 +1,12 @@
-from collections.abc import Sequence
+from collections.abc import Sequence, Iterable
 
 import numpy as np
 import pandas as pd
-from scipy.stats import norm, lognorm, gumbel_r, pearson3, weibull_min
+from scipy.optimize import minimize
+from scipy.stats import norm, gumbel_r, pearson3, weibull_min
 
 import estado_algoritmo
 from IhaEstado import IhaEstado
-
 
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   tamanio_array: int = len(df['Valor'])
@@ -16,15 +16,16 @@ def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   vesg: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   vesw: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
   # iniciacion valores
+  df.to_csv('prueba_func.csv')
   mun, stdn = norm.fit(df['Valor'])
-  pln = lognorm.fit(df['Valor'])
+  # pln = lognorm.fit(df['Valor'])
   mug, beta = gumbel_r.fit(df['Valor'])
   a1, m, s = pearson3.fit(df['Valor'])
   shape, loc, scale = weibull_min.fit(df['Valor'])
   for i, x in enumerate(df['Valor']):
     n = normal_distr(x, mun, stdn)
     vesn[i] = n
-    n = lognormal_distr(x, pln[0], pln[2])
+    # n = lognormal_distr(x, pln[0], pln[2])
     vesln[i] = n
     n = gumball_distr(x, mug, beta)
     vesg[i] = n
@@ -35,18 +36,19 @@ def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   gumball_corr = np.corrcoef(df['Valor'], vesg)[0, 1]
   normal_corr = np.corrcoef(df['Valor'], vesn)[0, 1]
   pearson_corr = np.corrcoef(df['Valor'], vesp)[0, 1]
-  lognorm_corr = np.corrcoef(df['Valor'], vesln)[0, 1]
+  # lognorm_corr = 0  # np.corrcoef(df['Valor'], vesln)[0, 1]
   weibull_corr = np.corrcoef(df['Valor'], vesw)[0, 1]
   # Sacar el mayor de las correlaciones y sacar en 10 años cuanto es el 7Q10
   tiempo_retorno = tiempo_ret
   prob_ret = 1 - (1 / tiempo_retorno)
-  ajuste_seleccionado = mejor_ajuste(np.abs(normal_corr), np.abs(lognorm_corr),
+  ajuste_seleccionado = mejor_ajuste(np.abs(normal_corr), 0,  # np.abs(lognorm_corr),
                                      np.abs(gumball_corr), np.abs(pearson_corr),
                                      np.abs(weibull_corr))
   if ajuste_seleccionado == 1:
     return norm.ppf(prob_ret, loc=mun, scale=stdn)
   elif ajuste_seleccionado == 2:
-    return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])
+    pass
+    # return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])
   elif ajuste_seleccionado == 3:
     return gumbel_r.ppf(prob_ret, loc=mug, scale=beta)
   elif ajuste_seleccionado == 4:
@@ -58,7 +60,8 @@ def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   pass
 
 
-def mejor_ajuste(a: float, b: float, c: float, d: float, e: float) -> int:
+def mejor_ajuste(*args) -> int:
+  a, b, c, d, e = args
   maximo: float = max(a, b, c, d, e)  # Encuentra el máximo entre los tres valores
   if a == maximo:  # Comprueba si a es el máximo
     return 1
@@ -95,7 +98,7 @@ def calcular_7q10(df_completo: pd.DataFrame) -> list:
   df: pd.DataFrame = promedio_7_dias.groupby(promedio_7_dias.index.year)['Valor'].min()
   meses = [pd.DataFrame()] * 12
   for i in range(1, 13):
-    meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i]
+    meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i].dropna()
   q_710s: list = [0] * 12
   for i, x in enumerate(meses):
     q_710s[i] = calc_caud_retor(x, 10)
@@ -118,14 +121,10 @@ def generar_cdc(datos: pd.DataFrame) -> pd.DataFrame:
   return ordenados_2
 
 
-# def calc_normal(estado: estado_algoritmo.EstadoAnla) -> None:
-#   estado.df_cdc_normal = generar_cdc(estado.data)
-#   estado.cdc_normales = np.interp([0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995], estado.df_cdc_normal['cumsum'],
-#                                   estado.df_cdc_alterada['Valor'])
-#   estado.caud_return_normal = caud_retorn_anla(estado.data, estado.anios_retorn)
-
-
-def calc_resultados(datos: pd.DataFrame) -> estado_algoritmo.ResultadosAnla:
+def calc_resultados(datos: pd.DataFrame, debug_flag: bool = False) -> estado_algoritmo.ResultadosAnla:
+  if debug_flag:
+    # print(datos, "datos_alterado")
+    pass
   cdc: pd.DataFrame = generar_cdc(datos)
   cdc_anios: np.ndarray = np.interp(estado_algoritmo.EstadoAnla.cdc_umbrales, cdc['cumsum'],
                                     cdc['Valor'])
@@ -135,11 +134,13 @@ def calc_resultados(datos: pd.DataFrame) -> estado_algoritmo.ResultadosAnla:
   resultados: estado_algoritmo.ResultadosAnla = estado_algoritmo.ResultadosAnla(cdc=cdc, cdc_anios=cdc_anios,
                                                                                 caud_return=anios_retorno,
                                                                                 iah_result=resultados_iha)
+  if debug_flag:
+    pass  # print(resultados, "resultados_iha")
   return resultados
 
 
-def recortar_caudal(serie: pd.DataFrame, caudales: Sequence[float]) -> pd.DataFrame:
-  data_alterado = serie.copy()
+def recortar_caudal(original: pd.DataFrame, caudales: Sequence[float]) -> pd.DataFrame:
+  data_alterado = original.copy()
   for index, row in data_alterado.iterrows():
     month: int = row.name.month - 1
     data_alterado.at[index, 'Valor'] = min(row['Valor'], caudales[month])
@@ -148,21 +149,21 @@ def recortar_caudal(serie: pd.DataFrame, caudales: Sequence[float]) -> pd.DataFr
 
 def calc_alterado(data: pd.DataFrame, caudales) -> (pd.DataFrame, estado_algoritmo.ResultadosAnla):
   data_alterado = recortar_caudal(data, caudales)
-  calc_resultados(data_alterado)
-  return data_alterado, estado_algoritmo.ResultadosAnla
+  resultados_alterado: estado_algoritmo.ResultadosAnla = calc_resultados(data_alterado, True)
+  return data_alterado, resultados_alterado
 
 
 def caud_retorn_anla(df: pd.DataFrame, anios: list) -> list[float]:
   resultado: list = [0] * len(anios)
-  for i in anios:
-    resultado[i] = calc_caud_retor(df, anios[i])
+  for i, anio in enumerate(anios):
+    resultado[i] = calc_caud_retor(df, anio)
   return resultado
 
 
 def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
   df = pd.DataFrame()
   df = df.assign(Fecha=None, Mean=None)
-  grupo = df.groupby([data.index.year, data.index.month])
+  grupo = data.groupby([data.index.year, data.index.month])
   for group, data_filter in grupo:
     year, month = group
     mean_value = data_filter['Valor'].mean()
@@ -173,6 +174,13 @@ def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
   return df
 
 
+def mensual_mean(data: pd.DataFrame) -> np.ndarray:
+  datos_agrupados = data.groupby(data.index.month)
+  promedios = np.array((datos_agrupados.mean())['Valor'])
+  maximos = np.array((datos_agrupados.max())['Valor'])
+  return np.array((datos_agrupados * 0.95)['Valor'])
+
+
 # @dataclass
 # class ResultadosAnla:
 #   cdc: pd.DataFrame
@@ -181,20 +189,57 @@ def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
 #   iah_result: IhaEstado.IhaEstado
 
 def dividir_resultados(resultados_natural: estado_algoritmo.ResultadosAnla,
-                       resultados_otro: estado_algoritmo.ResultadosAnla) -> list:
+                       resultados_otro: estado_algoritmo.ResultadosAnla) -> list[list[float]]:
   resultados_cdc: list[float] = []
   resultados_retorno: list[float] = []
   for a, b in zip(resultados_natural.cdc_anios, resultados_otro.cdc_anios):
-    resultados_cdc.append(b / a)
+    resultados_cdc.append(a * 0.5 / b)
     pass
   for a, b in zip(resultados_natural.caud_return, resultados_otro.caud_return):
-    resultados_retorno.append(b / a)
+    resultados_retorno.append(a * 0.6 / b)
   resultados_iha: list[float] = resultados_natural.iah_result - resultados_otro.iah_result
-  return list[resultados_cdc, resultados_retorno, resultados_iha]
-  # < 0.5 cdc con y sin proyecto
+  return [resultados_cdc, resultados_retorno, resultados_iha]
+  # > 0.5 cdc con y sin proyecto
   # > 0.6 periodos de retorno
-  # umbrales es media mas o menos desviación estandar caudal natural
-  pass
+  # umbrales es media más o menos desviación estandar caudal natural
+  # pass
+
+
+def funcion_costo(resultados_01: list, caudales: list):
+  costo: float = funcion_castigo(resultados_01) + funcion_suma(caudales)
+  print(costo, "funcion_costo", caudales)
+  return costo
+
+
+def funcion_castigo(resultados: list) -> float:
+  C1, C2, C3 = 1, 4, 1
+  sumatoria = 0
+
+  def castigar(a: Iterable | float):
+    nonlocal sumatoria
+    if isinstance(a, Iterable):
+      for i in a:
+        castigar(i)
+    else:
+      if a < 1:
+        pass
+      else:
+        sumatoria += C1 * np.exp((a - C3) * C2)
+
+  castigar(resultados)
+  return sumatoria
+
+
+def funcion_suma(caudales: list, euclidiana: bool = False) -> float:
+  epsilon = 2E-3
+  suma: float = 0
+  if euclidiana:
+    suma = np.sqrt(np.sum(np.array(caudales) ** 2))
+  else:
+    suma = np.array(caudales).sum()
+  if suma <= epsilon:
+    return 20000
+  return suma
 
 
 def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
@@ -202,20 +247,36 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
   estado.df_month_mean = general_month_mean(estado.data)
   estado.q7_10 = calcular_7q10(estado.data)
   estado.q95 = calcular_q95(estado)
+  estado.data.to_csv("estado_data_prueba_1.csv")
   estado.propuesta_inicial_ref = np.minimum(estado.q7_10, estado.q95)
   # calculo estado normal
   estado.resultados_ori = calc_resultados(estado.data)
   # calculo estado referencia
   estado.data_ref, estado.resultados_ref = calc_alterado(estado.data, estado.propuesta_inicial_ref)
-  # calibracion estado objetivo
-  for i in range(2000):
-    # cambiar los caudales, puede ser algoritmos geneticos o minimize o algo así
-    # estado.caud_final = alguna cosa aquí
-    estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, estado.caud_final)
-    resultados_prov = comparar_resultados(estado.resultados_ori, estado.resultados_alterada)
-    # comparar los resultados
-    # eso es complicado
+
+  def funcion_objetivo(caudal_propuesto) -> float:
+    """
+    Función objetivo que calcula el costo para un conjunto dado de caudales.
+    """
+    print(caudal_propuesto, "caudal_propuesto")
+    estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, caudal_propuesto)
+    # Utiliza la función comparar_resultados con el caudal propuesto
+
+    return comparar_resultados(estado.resultados_ori, estado.resultados_alterada, caudal_propuesto)
+
+  propuesta_inicial = mensual_mean(estado.data)/0.95
+  resultado = minimize(
+    funcion_objetivo,
+    x0=propuesta_inicial,  # Valor inicial (propuesta inicial de caudales)
+    method='Nelder-Mead',
+    # method='L-BFGS-B',  # Método de optimización
+    bounds=[(0, np.inf)] * len(estado.propuesta_inicial_ref)  # Limita los caudales a ser positivos
+  )
+  print(resultado.x)
   return pd.DataFrame()
-def comparar_resultados(a, b):
-  # todo
-  return a
+
+
+def comparar_resultados(natural: estado_algoritmo.ResultadosAnla, alterado: estado_algoritmo.ResultadosAnla,
+                        caudales: list) -> float:
+  resultados_a_comparar = dividir_resultados(natural, alterado)
+  return funcion_costo(resultados_a_comparar, caudales)

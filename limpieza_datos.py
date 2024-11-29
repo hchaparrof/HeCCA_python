@@ -316,7 +316,7 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> (pd.Dat
   days = pd.date_range(base.iloc[0]['Fecha'], base.iloc[-1]['Fecha'])
   days_ind = pd.DatetimeIndex(days)
   base = base.set_index('Fecha')
-  print(base.head())
+  # print(base.head())
   base = base.reindex(days)
   base, anios = anios_vacios(base)
   if df_apoyo is not None:

@@ -20,6 +20,8 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
       los umbrales se guardan en las variables globales
     """
   # print("hola_0.5")
+  # todo lo que dijo alejandro de anio hidrologico
+  # todo anio hidrologico
   data = estado.data
   # print(data)
   u_qb = 2.33

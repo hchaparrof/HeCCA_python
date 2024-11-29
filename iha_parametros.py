@@ -45,7 +45,7 @@ def Iha_parameter1(data, start_year, end_year):
         Group1_IHA.loc[month, year] = mean_value
       else:
         Group1_IHA.loc[month, year] = np.nan
-  print(Group1_IHA.head())
+  # print(Group1_IHA.head())
   return armar_df((Group1_IHA.mean(axis=1), Group1_IHA.std(axis=1)))
 
 

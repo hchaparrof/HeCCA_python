@@ -28,12 +28,12 @@ class IhaEstado:
        elemento.grupo_5], axis=0, ignore_index=True)
     return df_unido
 
-  def __sub__(self, other):
+  def __sub__(self, other) -> list:
     if isinstance(other, IhaEstado):
       base = IhaEstado.unir_grupos(self)
       otro = IhaEstado.unir_grupos(other)
-      serie_resultado = ((base['Valor'] - otro['Valor']).abs()) / base['std']
-      return list[serie_resultado]
+      serie_resultado: pd.Series = ((base['Valor'] - otro['Valor']).abs()) / base['std']
+      return serie_resultado.to_list()
     return NotImplemented
 
   def __truediv__(self, otro):
@@ -59,10 +59,10 @@ class IhaEstado:
 
   def calcular_iha(self):
     self.data, self.start_year, self.end_year = ih.set_data(self.data_cruda)
-    print("prueba_cambio")
+    # print("prueba_cambio")
     # self.start_year = self.data.index.year.min()
     # self.end_year = self.data.index.year.max()
-    print(self.start_year, self.end_year)
+    # print(self.start_year, self.end_year)
     self.grupo_1 = ih.Iha_parameter1(self.data, self.start_year, self.end_year)
     self.grupo_2 = ih.Iha_parameter2(self.data, self.start_year, self.end_year)
     self.grupo_3 = ih.Iha_parameter3(self.data, self.start_year, self.end_year)
