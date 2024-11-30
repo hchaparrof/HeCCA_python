@@ -3,52 +3,44 @@ from collections.abc import Sequence, Iterable
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-from scipy.stats import norm, gumbel_r, pearson3, weibull_min
+from scipy.stats import norm, gumbel_r, pearson3, weibull_min, lognorm
 
 import estado_algoritmo
 from IhaEstado import IhaEstado
 
+
 def calc_caud_retor(df: pd.DataFrame, tiempo_ret: int) -> float:
   tamanio_array: int = len(df['Valor'])
-  vesn: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
-  vesln: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
-  vesp: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
-  vesg: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
-  vesw: np.ndarray = np.empty(tamanio_array, dtype=np.float32)
+  array_valor: np.ndarray = df['Valor'].to_numpy()
   # iniciacion valores
-  df.to_csv('prueba_func.csv')
+  # df.to_csv('prueba_func.csv')
   mun, stdn = norm.fit(df['Valor'])
   # pln = lognorm.fit(df['Valor'])
   mug, beta = gumbel_r.fit(df['Valor'])
   a1, m, s = pearson3.fit(df['Valor'])
   shape, loc, scale = weibull_min.fit(df['Valor'])
-  for i, x in enumerate(df['Valor']):
-    n = normal_distr(x, mun, stdn)
-    vesn[i] = n
-    # n = lognormal_distr(x, pln[0], pln[2])
-    vesln[i] = n
-    n = gumball_distr(x, mug, beta)
-    vesg[i] = n
-    n = weibull_min.pdf(x, shape, loc, scale)
-    vesw[i] = n
-    n = pearson3.pdf(x, a1, m, s)
-    vesp[i] = n
+  vesn = normal_distr(array_valor, mun, stdn)
+  # vesln = lognormal_distr(array_valor, pln[0], pln[2])
+  vesg = gumball_distr(array_valor, mug, beta)
+  vesw = weibull_min.pdf(array_valor, shape, loc, scale)
+  vesp = pearson3.pdf(array_valor, a1, m, s)
   gumball_corr = np.corrcoef(df['Valor'], vesg)[0, 1]
   normal_corr = np.corrcoef(df['Valor'], vesn)[0, 1]
   pearson_corr = np.corrcoef(df['Valor'], vesp)[0, 1]
-  # lognorm_corr = 0  # np.corrcoef(df['Valor'], vesln)[0, 1]
+  # lognorm_corr = np.corrcoef(df['Valor'], vesln)[0, 1]
   weibull_corr = np.corrcoef(df['Valor'], vesw)[0, 1]
+
   # Sacar el mayor de las correlaciones y sacar en 10 años cuanto es el 7Q10
   tiempo_retorno = tiempo_ret
   prob_ret = 1 - (1 / tiempo_retorno)
-  ajuste_seleccionado = mejor_ajuste(np.abs(normal_corr), 0,  # np.abs(lognorm_corr),
+  ajuste_seleccionado = mejor_ajuste(np.abs(normal_corr), 0, # np.abs(lognorm_corr),
                                      np.abs(gumball_corr), np.abs(pearson_corr),
                                      np.abs(weibull_corr))
   if ajuste_seleccionado == 1:
     return norm.ppf(prob_ret, loc=mun, scale=stdn)
   elif ajuste_seleccionado == 2:
-    pass
     # return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])
+    pass
   elif ajuste_seleccionado == 3:
     return gumbel_r.ppf(prob_ret, loc=mug, scale=beta)
   elif ajuste_seleccionado == 4:
@@ -141,9 +133,8 @@ def calc_resultados(datos: pd.DataFrame, debug_flag: bool = False) -> estado_alg
 
 def recortar_caudal(original: pd.DataFrame, caudales: Sequence[float]) -> pd.DataFrame:
   data_alterado = original.copy()
-  for index, row in data_alterado.iterrows():
-    month: int = row.name.month - 1
-    data_alterado.at[index, 'Valor'] = min(row['Valor'], caudales[month])
+  meses = data_alterado.index.month - 1
+  data_alterado['Valor'] = np.minimum(data_alterado['Valor'].values, np.array(caudales)[meses])
   return data_alterado
 
 
@@ -174,11 +165,11 @@ def general_month_mean(data: pd.DataFrame) -> pd.DataFrame:
   return df
 
 
-def mensual_mean(data: pd.DataFrame) -> np.ndarray:
+def mensual_mean(data: pd.DataFrame) -> (np.ndarray, np.ndarray):
   datos_agrupados = data.groupby(data.index.month)
   promedios = np.array((datos_agrupados.mean())['Valor'])
   maximos = np.array((datos_agrupados.max())['Valor'])
-  return np.array((datos_agrupados * 0.95)['Valor'])
+  return promedios, maximos
 
 
 # @dataclass
@@ -232,7 +223,6 @@ def funcion_castigo(resultados: list) -> float:
 
 def funcion_suma(caudales: list, euclidiana: bool = False) -> float:
   epsilon = 2E-3
-  suma: float = 0
   if euclidiana:
     suma = np.sqrt(np.sum(np.array(caudales) ** 2))
   else:
@@ -264,15 +254,18 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
 
     return comparar_resultados(estado.resultados_ori, estado.resultados_alterada, caudal_propuesto)
 
-  propuesta_inicial = mensual_mean(estado.data)/0.95
+  max_mean = mensual_mean(estado.data)
+  propuesta_inicial = max_mean[0]
   resultado = minimize(
     funcion_objetivo,
     x0=propuesta_inicial,  # Valor inicial (propuesta inicial de caudales)
     method='Nelder-Mead',
     # method='L-BFGS-B',  # Método de optimización
-    bounds=[(0, np.inf)] * len(estado.propuesta_inicial_ref)  # Limita los caudales a ser positivos
+    bounds=[(0, limite) for limite in max_mean[1]]  # Limita los caudales a ser positivos
   )
-  print(resultado.x)
+  print(resultado.x, "resultado")
+  estado.data_alter2 = estado.data_alter
+
   return pd.DataFrame()
 
 

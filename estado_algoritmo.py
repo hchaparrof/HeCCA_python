@@ -133,6 +133,7 @@ class EstadoAnla(EstadoAlgoritmo):
     self.resultados_ori: ResultadosAnla
     self.resultados_alterada: ResultadosAnla
     self.resultados_ref: ResultadosAnla
+    self.data_alter2: pd.DataFrame
 
   def principal_funcion(self):
     # print("princial_funcion_anla")
