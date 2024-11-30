@@ -34,19 +34,29 @@ def set_data(data):
 def Iha_parameter1(data, start_year, end_year):
   """Parametros Grupo_1 calculo de la media a partir de los caudales diarios para los 12 meses de cada año"""
   # from datetime import datetime, timedelta
-  """Se crea el dataframe donde se guardaran los parametros del grupo 1"""
-  Group1_IHA = pd.DataFrame(index=range(1, 13), columns=range(start_year, end_year+1))
-  """Se crea el rango de fechas para el año"""
-  for year in range(start_year, end_year+1):
-    for month in range(1, 13):
-      monthly_data = data[(data['Year'] == year) & (data['Month'] == month)]
-      if not monthly_data.empty:
-        mean_value = np.nanmean(monthly_data['Valor'])
-        Group1_IHA.loc[month, year] = mean_value
-      else:
-        Group1_IHA.loc[month, year] = np.nan
-  # print(Group1_IHA.head())
-  return armar_df((Group1_IHA.mean(axis=1), Group1_IHA.std(axis=1)))
+  agrupados = data.groupby([  'Year' , 'Month'])
+  b = agrupados.mean()
+  # b['std'] = agrupados.std()['Valor']
+  b.rename(columns={'Valor': 'mean'}, inplace=True)
+  c = b[['mean']]
+  d = c.groupby(['Month'])
+  e = d.mean()
+  e ['std']= d.std()['mean']
+  e.rename(columns={'mean': 'Valor'}, inplace=True)
+  return e
+  # """Se crea el dataframe donde se guardaran los parametros del grupo 1"""
+  # Group1_IHA = pd.DataFrame(index=range(1, 13), columns=range(start_year, end_year+1))
+  # """Se crea el rango de fechas para el año"""
+  # for year in range(start_year, end_year+1):
+  #   for month in range(1, 13):
+  #     monthly_data = data[(data['Year'] == year) & (data['Month'] == month)]
+  #     if not monthly_data.empty:
+  #       mean_value = np.nanmean(monthly_data['Valor'])
+  #       Group1_IHA.loc[month, year] = mean_value
+  #     else:
+  #       Group1_IHA.loc[month, year] = np.nan
+  # # print(Group1_IHA.head())
+  # return armar_df((Group1_IHA.mean(axis=1), Group1_IHA.std(axis=1)))
 
 
 def Iha_parameter2(data, start_year, end_year):
