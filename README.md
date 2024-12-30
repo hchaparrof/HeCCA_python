@@ -1,32 +1,3 @@
-Código completo del progreso de la herramienta hecca en python, incluye la implementación de la herramienta para el calculo del caudal ambiental por la metodología del ideam y se preveé sumarle la metodología del anla.
-
-Uso:
-En el archivo setup.json cambiar los datos de archivo_base, archivo_apoyo y archivo_enso, por las ubicaciones de los archivos en su computador.
-En el archivo setup.json llenar los datos que sean necesarios, en caso de que "existencia_areas" o "existencia_umbrales" sean "false" no importa los valores de "areas" o "umbrales".
-"organismo" establece el algoritmo a utilizar, existen 2 metodologías diferentes: IDEAM o ANLA, y se selecciona como "ideam" y "anla" respectivamente.
-"areas" Se refiere a las áreas de las cuencas de estudio para las dos estaciones, la base y la de apoyo, en caso de que no se tenga cuenca de apoyo no importa el valor y si no se tiene areas se debe poner false en "existencia_areas", se asume que las áreas estan en m3/s, pero desde que esten en la misma dimensión no debería ser importante.
-"umbrales" Se refiere a los umbrales morfometricos de la cuenca de estudio en el lugar de estudio, son los umbrales QB y QTQ o caudal de banca llena y caudal de perdida de conectividad, eso se consigue con un estudio hidraulico para la cuenca, si no se tiene estudios hidraulicos se debe poner false en "existencia_umbrales" en ese caso los umbrales seran tomados como los caudales extremos con un periodo de retorno 2.33 para QB y 2 para QTQ.
-
-Una vez las configuraciones estan completas para correr el código hay que ejecutar el script de la siguiente manera:
-Primero hay que instalar los requerimientos, para lo cual primero hay que asegurarse de tener python en el sistema y ejecutar los siguientes comandos en windows:
-pip install virtualenv
-python -m virtualenv entorno_hecca 
-entorno_hecca\Scripts\activate
-pip install -r requirements.txt
-y luego ahora si correr el código con:
-python3 -OO hecca_final.py
- o 
-python -OO hecca_final.py
-dependiendo de como este configurado su path.
-En linux es:
-pip install virtualenv
-python -m virtualenv entorno_hecca
-source entorno_hecca/bin/activate
-pip install -r requirements.txt
-y luego ahora si correr el código con:
-python3 -OO hecca_final.py
- o 
-python -OO hecca_final.py
 # 🎨 Proyecto de Análisis y Procesamiento de Datos Hidrológicos
 
 ⭐ **Repositorio Principal**  
@@ -141,3 +112,48 @@ $ git commit -m "Agrega nueva funcionalidad"
 ________________________________________
 👤 Autores
 
+## 📜 Documentación de la Herramienta HECCA
+
+Este repositorio contiene el código completo del progreso de la herramienta HECCA en Python. La herramienta incluye la implementación para el cálculo del caudal ambiental utilizando la metodología del **IDEAM** y se prevé añadir próximamente la metodología del **ANLA**.
+
+### Configuración
+
+1. **Archivo `setup.json`**  
+   Cambia los siguientes parámetros en el archivo `setup.json` con las ubicaciones de los archivos en tu computadora:
+   - `archivo_base`
+   - `archivo_apoyo`
+   - `archivo_enso`
+
+2. **Campos en `setup.json`**  
+   Completa los campos necesarios en el archivo `setup.json`. En caso de que `existencia_areas` o `existencia_umbrales` sean `false`, no es necesario proporcionar valores para `areas` o `umbrales`.
+
+   - **Campo "organismo"**: Establece el algoritmo a utilizar. Existen 2 metodologías diferentes:
+     - `ideam` para la metodología **IDEAM**
+     - `anla` para la metodología **ANLA**
+
+   - **Campo "areas"**: Se refiere a las áreas de las cuencas de estudio para las dos estaciones (base y apoyo). 
+     - Si no se tiene cuenca de apoyo, no importa el valor.
+     - Si no se tienen áreas, debe configurarse `"existencia_areas": false`. Se asume que las áreas están en m³/s, pero si están en otra unidad, deben estar en la misma dimensión para no afectar el cálculo.
+
+   - **Campo "umbrales"**: Se refiere a los umbrales morfométricos de la cuenca de estudio, como el **QB** (caudal de banca llena) y el **QTQ** (caudal de pérdida de conectividad). Estos valores se obtienen mediante un estudio hidráulico para la cuenca.
+     - Si no se tiene un estudio hidráulico, debe configurarse `"existencia_umbrales": false`. 
+     - En este caso, los umbrales se tomarán como los caudales extremos con un periodo de retorno de **2.33** para **QB** y **2** para **QTQ**.
+
+### Instrucciones de Ejecución
+
+1. **Instalación de los requerimientos**  
+   Primero, asegúrate de tener Python instalado en tu sistema y luego instala los requerimientos necesarios para el entorno de desarrollo.
+
+   **En Windows**:
+   ```bash
+   pip install virtualenv
+   python -m virtualenv entorno_hecca
+   entorno_hecca\Scripts\activate
+   pip install -r requirements.txt 
+   **En Linux**:
+   ```bash
+  pip install virtualenv
+  python -m virtualenv entorno_hecca
+  source entorno_hecca/bin/activate
+  
+pip install -r requirements.txt
