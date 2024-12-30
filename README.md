@@ -64,41 +64,50 @@ Este proyecto facilita el análisis de eventos hidrológicos, incluyendo:
 ├── enso.json           # Datos relacionados con ENOS
 ├── oni_3.csv          # Archivo con información climática (ONI)
 ├── README.md          # Este archivo
-Detalles por archivo
-•  IhaEstado.py: Implementa el cálculo y la clasificación de estados hidrológicos basado en las normas ANLA, incluyendo pruebas preliminares para garantizar resultados consistentes.
-•	Clase IhaEstado:
-o	Atributos:
-	grupo_1 a grupo_5: Almacenan diferentes parámetros calculados según las métricas de IHA.
-	data_cruda: Contiene el DataFrame original proporcionado como entrada.
-	data: Almacena los datos procesados y filtrados.
-	start_year, end_year: Identifican el rango temporal de los datos.
-o	Métodos:
-	calcular_iha: Ejecuta los cálculos de los parámetros IHA, divididos en cinco grupos, utilizando funciones del módulo iha_parametros.
-	unir_grupos: Combina los grupos de datos en un único DataFrame para análisis conjunto.
-	Operadores sobrescritos: __sub__ y __truediv__ para comparar y dividir instancias de IhaEstado.
-•  enso.json: Archivo JSON que almacena datos relacionados con eventos de El Niño y La Niña. Este archivo contiene:
-•	Una lista de años asociados con eventos de El Niño (ninio).
-•	Una lista de años asociados con eventos de La Niña (ninia).
-•	Una clave normal que indica valores estándar cuando no se presentan eventos ENOS específicos.
-•  consistencia.py: Realiza el análisis de consistencia y homogeneidad de datos hidrológicos. Las principales funciones son:
-•	filtrar_datos: Filtra datos según un rango general y excepciones para años específicos.
-•	procesar_archivos_csv: Procesa múltiples archivos CSV, generando análisis de caudal acumulado, detectando años consistentes y atípicos, y generando gráficas.
-•	homogeneidad_helmert: Evalúa la homogeneidad usando el método de Helmert.
-•	homogeneidad_kendall: Evalúa la homogeneidad utilizando el test de Kendall.
+**Detalles por archivo:**
 
+- **IhaEstado.py**: Implementa el cálculo y la clasificación de estados hidrológicos basado en las normas ANLA, incluyendo pruebas preliminares para garantizar resultados consistentes.
 
-•	estadistica_ideam.py: Realiza análisis estadísticos de los datos obtenidos del IDEAM, con énfasis en la detección de patrones y tendencias en series temporales.
-•  comprobacion_ideam.py: Contiene funciones diseñadas para realizar pruebas estadísticas sobre datos hidrológicos de referencia y alterados, incluyendo:
-•	prueba_si_cumple: Evalúa diferencias estadísticas entre series hidrológicas.
-•	cumple: Determina si una serie alterada cumple con parámetros normativos en comparación con una de referencia.
-•	Prueba_porc: Calcula porcentajes aprobatorios según criterios específicos.
-•	calibrar_mes: Ajusta parámetros de un mes para garantizar cumplimiento con condiciones establecidas.
-•	
-•	limpieza_datos.py: Encargado de limpiar y estructurar los datos crudos provenientes de diferentes fuentes para su posterior análisis.
-•	ingreso_datos.py: Automatiza el proceso de ingreso y verificación de datos para garantizar la integridad de la información.
-•	funciones_anla.py y funciones_ideam.py: Contienen funciones auxiliares específicas para manejar cálculos, formatos de datos y transformaciones necesarias en las diferentes etapas del proyecto.
-•	enso.json: Archivo JSON que almacena datos relacionados con eventos de El Niño y La Niña.
-•	oni_3.csv: Archivo CSV que contiene datos climáticos históricos relevantes para el análisis.
+    - **Clase IhaEstado**:
+        - **Atributos**:
+            - `grupo_1` a `grupo_5`: Almacenan diferentes parámetros calculados según las métricas de IHA.
+            - `data_cruda`: Contiene el DataFrame original proporcionado como entrada.
+            - `data`: Almacena los datos procesados y filtrados.
+            - `start_year`, `end_year`: Identifican el rango temporal de los datos.
+        - **Métodos**:
+            - `calcular_iha`: Ejecuta los cálculos de los parámetros IHA, divididos en cinco grupos, utilizando funciones del módulo iha_parametros.
+            - `unir_grupos`: Combina los grupos de datos en un único DataFrame para análisis conjunto.
+            - Operadores sobrescritos: `__sub__` y `__truediv__` para comparar y dividir instancias de IhaEstado.
+  
+- **enso.json**: Archivo JSON que almacena datos relacionados con eventos de El Niño y La Niña. Este archivo contiene:
+    - Una lista de años asociados con eventos de El Niño (ninio).
+    - Una lista de años asociados con eventos de La Niña (ninia).
+    - Una clave `normal` que indica valores estándar cuando no se presentan eventos ENOS específicos.
+
+- **consistencia.py**: Realiza el análisis de consistencia y homogeneidad de datos hidrológicos. Las principales funciones son:
+    - `filtrar_datos`: Filtra datos según un rango general y excepciones para años específicos.
+    - `procesar_archivos_csv`: Procesa múltiples archivos CSV, generando análisis de caudal acumulado, detectando años consistentes y atípicos, y generando gráficas.
+    - `homogeneidad_helmert`: Evalúa la homogeneidad usando el método de Helmert.
+    - `homogeneidad_kendall`: Evalúa la homogeneidad utilizando el test de Kendall.
+
+- **estadistica_ideam.py**: Realiza análisis estadísticos de los datos obtenidos del IDEAM, con énfasis en la detección de patrones y tendencias en series temporales.
+
+- **comprobacion_ideam.py**: Contiene funciones diseñadas para realizar pruebas estadísticas sobre datos hidrológicos de referencia y alterados, incluyendo:
+    - `prueba_si_cumple`: Evalúa diferencias estadísticas entre series hidrológicas.
+    - `cumple`: Determina si una serie alterada cumple con parámetros normativos en comparación con una de referencia.
+    - `Prueba_porc`: Calcula porcentajes aprobatorios según criterios específicos.
+    - `calibrar_mes`: Ajusta parámetros de un mes para garantizar cumplimiento con condiciones establecidas.
+
+- **limpieza_datos.py**: Encargado de limpiar y estructurar los datos crudos provenientes de diferentes fuentes para su posterior análisis.
+
+- **ingreso_datos.py**: Automatiza el proceso de ingreso y verificación de datos para garantizar la integridad de la información.
+
+- **funciones_anla.py** y **funciones_ideam.py**: Contienen funciones auxiliares específicas para manejar cálculos, formatos de datos y transformaciones necesarias en las diferentes etapas del proyecto.
+
+- **enso.json**: Archivo JSON que almacena datos relacionados con eventos de El Niño y La Niña.
+
+- **oni_3.csv**: Archivo CSV que contiene datos climáticos históricos relevantes para el análisis.
+
 ________________________________________
 🔧 Requisitos
 •	Python 3.8 o superior
