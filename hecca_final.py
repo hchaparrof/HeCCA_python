@@ -22,12 +22,9 @@ def export_resultados(array_onj: list, str_export: str) -> None:
 def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
   return objeto.principal_funcion()
 
-
-def main():
-  instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  
+def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]):
   if instancia_algoritmo is None:
-    print("Error en el proceso")
-    return
+    return None
   for instance in instancia_algoritmo:
     instance.principal_funcion()
   array_ideam: list[estado_algoritmo.EstadoIdeam] = []
@@ -40,6 +37,15 @@ def main():
       hola += 1
     elif isinstance(obj, estado_algoritmo.EstadoAnla):
       array_anla.append(obj)
+  return array_anla, array_ideam
+def main():
+  instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  
+  resultados = ejecutar_bloque(instancia_algoritmo)
+  if resultados == None:
+    print("Error en el proceso")
+    return 
+  else:
+    array_anla, array_ideam = ejecutar_bloque(instancia_algoritmo)
   export_resultados(array_ideam, 'caudal_ambiental_ideam.csv')
   export_resultados(array_anla, 'caudal_ambiental_anla.csv')
   print("labor finalizada ")
