@@ -3,12 +3,11 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-
 import IhaEstado
 
 
 class EstadoAlgoritmo:
-  def __init__(self, data_inicial, ruta_m: str):
+  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int):
     self.ruta = ruta_m
     self.data = data_inicial
     self.data_alter = pd.DataFrame()
@@ -19,10 +18,14 @@ class EstadoAlgoritmo:
     self.str_apoyo = ""
     self.df_month_mean = pd.DataFrame()
     self.df_month_mean_rev = pd.DataFrame()
+    self.dist_prob: int = -1
+    self.ajuste: int = -1
+    self.anio_hidrologico: int = anio_hidrologico
     # self.preparacion_comun()
 
   def preparacion_comun(self, *args):
-    pass
+    from funciones_anla import determinar_ajuste
+    determinar_ajuste(self)
 
   def principal_funcion(self):
     pass
@@ -44,7 +47,7 @@ class EstadoIdeam(EstadoAlgoritmo):
   def __init__(self, data_inicial: pd.DataFrame, data_dict: dict,
                extremos: list[Optional[pd.DataFrame]] = None):
     # print(data_dict)
-    super().__init__(data_inicial, data_dict['archivos']['archivo_base'])
+    super().__init__(data_inicial, data_dict['archivos']['archivo_base'], data_dict['anio_hidrologico'])
     # print(extremos)
     if extremos:
       pass
@@ -88,13 +91,15 @@ class EstadoIdeam(EstadoAlgoritmo):
     self.preparacion_comun()
 
   def preparacion_comun(self):
-    from funciones_ideam import buscar_umbrales
-    self.df_month_mean = buscar_umbrales(self)
+    import funciones_ideam
+    super().preparacion_comun(self)
+    funciones_ideam.umbrales_serie(self, True)
+    funciones_ideam.calcular_df_resumen(self)
 
   def principal_funcion(self):
     # print("principal funcion_ideam")
-    from funciones_ideam import prin_func
-    prin_func(self)
+    import funciones_ideam
+    funciones_ideam.prin_func(self)
     self.to_csv()
 
   def setear_umbrales(self, f_umbrales: list):
@@ -117,8 +122,8 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
   anios_retorn: list = [2, 5, 10, 25]
-  def __init__(self, data_inicial, ruta_m: str):
-    super().__init__(data_inicial, ruta_m)
+  def __init__(self, data_inicial, ruta_m: str, anio_hidrologico):
+    super().__init__(data_inicial, ruta_m, anio_hidrologico)
     self.data_ref: pd.DataFrame = pd.DataFrame()
     self.propuesta_inicial_ref: list[float] = [0] * 12
     self.caud_final: list[float] = [0] * 12

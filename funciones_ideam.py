@@ -2,8 +2,122 @@ import pandas as pd
 from evento_completo import EventoCompleto
 from estado_algoritmo import EstadoIdeam
 from estadistica_ideam import *
+from funciones_anla import caud_retor, determinar_ajuste
+from collections.abc import Iterable
+
+def anio_hidrologico(datos: pd.DataFrame, mes: int) -> pd.DataFrame:
+    """
+    Ajusta el índice temporal de un DataFrame para que comience en el primer día 
+    del mes especificado dentro del mismo año de la fecha mínima.
+
+    Parámetros:
+    -----------
+    datos : pd.DataFrame
+        DataFrame con un índice de tipo datetime.
+    mes : int
+        Número del mes (1-12) al que se debe ajustar el inicio del año hidrológico.
+
+    Retorna:
+    --------
+    pd.DataFrame
+        DataFrame con el índice ajustado, donde todas las fechas han sido 
+        desplazadas para que la fecha mínima coincida con el primer día del mes dado.
+
+    Notas:
+    ------
+    - Si la fecha mínima en el índice ya es posterior al primer día del mes dado, 
+      las fechas serán desplazadas hacia adelante.
+    - La diferencia en días se calcula de manera absoluta, lo que puede generar 
+      resultados inesperados si la fecha mínima está después del mes deseado.
+    - Si el mes es 1 retorna el df sin cambiar.
+    - El sistema asume que tu df empieza en enero
+    """
+    if mes == 1:
+      return datos
+    inicio: pd.Timestamp = datos.index.min()
+    fecha_dada: pd.Timestamp = pd.Timestamp(year=inicio.year, month=mes, day=1)
+    diferencia_dias: int = abs((fecha_dada - inicio).days)
+    datos.index = datos.index + pd.to_timedelta(diferencia_dias, unit='D')
+    return datos
 
 
+def umbrales_serie(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> None:
+    """
+    Calcula y actualiza los umbrales de caudal de una serie temporal en el objeto `estado`.
+
+    Parámetros:
+    ----------
+    estado : EstadoIdeam
+        Objeto que contiene la información de la serie temporal, incluyendo datos de caudal,
+        ajustes y umbrales históricos.
+    cambiar_umbrales : bool, opcional
+        Si es `True`, recalcula los umbrales de caudal; si es `False`, la función retorna
+        sin hacer modificaciones (por defecto es `True`).
+
+    Descripción:
+    -----------
+    - Obtiene los valores mínimos y máximos mensuales del caudal si no están predefinidos.
+    - Calcula diferentes umbrales de caudal (`q10`, `qtq`, `q15`, `qb`) usando la función `caud_retor`.
+    - Si existen umbrales históricos en `estado.h_umbrales`, los usa en lugar de los recalculados.
+    - Actualiza los umbrales en el objeto `estado` con los valores calculados o históricos.
+
+    Retorna:
+    -------
+    None
+        La función modifica el objeto `estado` en su lugar y no retorna ningún valor explícito.
+    """
+    ajuste = estado.ajuste
+    u_qb = 2.33
+    u_qtq = 2
+    
+    if not cambiar_umbrales:
+        return
+    
+    # Verifica si los DataFrames de extremos tienen datos
+    data_min = estado.data_min if not estado.data_min.empty else None
+    data_max = anio_hidrologico(estado.data_max, estado.anio_hidrologico) if not estado.data_max.empty else None
+    if data_min is None or data_max is None:
+        if data_min is None:
+            data_min = estado.data.groupby([estado.data.index.year, estado.data.index.month]).min()
+        if data_max is None:
+            data_max = (anio_hidrologico(estado.data, estado.anio_hidrologico)).groupby([estado.data.index.year, estado.data.index.month]).max()
+    
+    q10 = caud_retor(data_min, ajuste, 10)
+    qtq = caud_retor(data_min, ajuste, u_qtq)
+    q15 = caud_retor(data_max, ajuste, 15)
+    qb = caud_retor(data_max, ajuste, u_qb)
+    
+    # Si hay umbrales históricos, usarlos en lugar de recalcular
+    qb = estado.h_umbrales['QB'] if estado.h_umbrales['QB'] is not None else qb
+    qtq = estado.h_umbrales['QTQ'] if estado.h_umbrales['QTQ'] is not None else qtq
+    
+    estado.setear_umbrales([q15, qb, qtq, q10])
+
+
+
+def calcular_df_resumen(estado: EstadoIdeam) -> None:
+  data = estado.data
+  df = pd.DataFrame()
+  df = df.assign(Fecha=None, Min=None, Max=None, Mean=None, Min_rev=None, Mean_rev=None)
+  grouped = data.groupby([data.index.year, data.index.month])
+  for group, data_filter in grouped:
+    year, month = group
+    min_value = data_filter['Valor'].min()
+    max_value = data_filter['Valor'].max()
+    mean_value = data_filter['Valor'].mean()
+    umbral_Q10 = estado.umbrales['Q10']
+    umbral_Q15 = estado.umbrales['QTR15']
+    min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
+    mean_rev_value = data_filter.loc[
+      (data_filter['Valor'] > umbral_Q10) & (data_filter['Valor'] < umbral_Q15), 'Valor'].mean()
+    row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value, mean_rev_value]
+    df.loc[len(df)] = row
+  #########
+  df['Fecha'] = pd.to_datetime(df['Fecha'])
+  df = df.set_index('Fecha')
+  estado.df_month_mean = df
+
+@DeprecationWarning
 def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.DataFrame:
   """
     calcula los umbrales QTR 15, QTQ, QB y Q10, además del minimo revisado por año.
@@ -38,15 +152,22 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   df = df.assign(Fecha=None, Min=None, Max=None, Mean=None)
   # minimos
   if estado.data_min.empty:
-  # se crea un dataframe en donde se calculan los minimos máximos y promedio por mes y año
+    # se crea un dataframe en donde se calculan los minimos máximos y promedio por mes y año
     grouped = data.groupby([data.index.year, data.index.month])
+    ajuste_ = determinar_ajuste(data['Valor'])
   else:
     grouped = estado.data_min.groupby([estado.data_min.index.year, estado.data_min.index.month])
+    ajuste_ = determinar_ajuste(data.data_min['Valor'])
+
   for group, data_filter in grouped:
     year, month = group
     row = [f"{year}-{month}", data_filter['Valor'].min(), data_filter['Valor'].max(),
            data_filter['Valor'].mean()]
     df.loc[len(df)] = row
+  # ajuste_ = determinar_ajuste(df[['Min']])
+  q_10_miguel = caud_retor(df[['Min']], ajuste_, 10)
+  q_qtq_miguel = caud_retor(df[['Min']], ajuste_, u_qtq)
+
   # data view
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
@@ -65,7 +186,7 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   # std_max = (np.std(maxs, ddof=1))
   alpha_min = 1.0079 * (coef_variacion_min ** -1.084)
   a_alpha_min = (-0.0607 * (coef_variacion_min ** 3)) + (0.5502 * (coef_variacion_min ** 2)) - (
-            0.4937 * coef_variacion_min) + 1.003
+          0.4937 * coef_variacion_min) + 1.003
   beta = (a_alpha_min / mean_min) ** (-1)
   # umbrales QTQ y QB
   #
@@ -80,8 +201,10 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   # calculate mim, max, mean, min_rev and mean_rev
   if estado.data_max.empty:
     grouped = data.groupby([data.index.year, data.index.month])
+    ajuste_ = determinar_ajuste(data['Valor'])
   else:
     grouped = estado.data_max.groupby([estado.data_max.index.year, estado.data_max.index.month])
+    ajuste_ = determinar_ajuste(data.data_max['Valor'])
   for group, data_filter in grouped:
     year, month = group
     min_value = data_filter['Valor'].min()
@@ -90,6 +213,8 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
     min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value]
     df.loc[len(df)] = row
+  q_15_miguel = caud_retor(df[['Max']], ajuste_, 15)
+  q_b_miguel = caud_retor(df[['Max']], ajuste_, u_qb)
   df['Fecha'] = pd.to_datetime(df['Fecha'])
   df = df.set_index('Fecha')
   maxs = df.groupby(df.index.year)['Max'].max()
@@ -139,7 +264,7 @@ def buscar_umbrales(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> pd.Da
   return df
 
 
-def df_eventos(df_objetivo, lista_eventos):
+def df_eventos(df_objetivo: pd.DataFrame, lista_eventos: Iterable) -> pd.DataFrame:
   """función toma un dataframe donde guardar las cosas y una lista con todos
   los eventos de la categoria que se le den y lo que hace es crear un dataframe
   con los datos de mes magnitud, etc. para luego poder acceder a ellos más fácil
@@ -154,7 +279,7 @@ def df_eventos(df_objetivo, lista_eventos):
   return df_objetivo
 
 
-def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='Valor'):
+def nombrar_evento(estado: EstadoIdeam, dfh: pd.DataFrame, str4_h: str='Valor') -> None:
   """funcion que coge un dataframe con datos de caudal y determina
   que días hubo eventos poniendo 1 o 0 donde sea necesario
   Parameters
@@ -164,12 +289,8 @@ def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='Valor'):
   str4_h: string con el valor 'cuenca-base' se necesita, aunque no se porque
   Return
   ----------
-  nada
+  None
   """
-  # global QTR_15
-  # global QB
-  # global QTQ
-  # global Q10
   umbral_Q15 = estado.umbrales['QTR15']
   umbral_QB = estado.umbrales['QB']
   umbral_Q10 = estado.umbrales['Q10']
@@ -192,7 +313,7 @@ def nombrar_evento(estado: EstadoIdeam, dfh, str4_h='Valor'):
   dfh.loc[dfh[str4_h] > umbral_Q10, 'event_Q10'] = 0
 
 
-def crear_evento(estado: EstadoIdeam, df21):
+def crear_evento(estado: EstadoIdeam, df21: pd.DataFrame) -> list:
   primer_dia = estado.primer_dia
   dif = estado.dif
   final_dia = estado.final_dia
@@ -215,7 +336,7 @@ def crear_evento(estado: EstadoIdeam, df21):
 
 
 def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: str,
-                   eventos_umbral: list, eventosi: str, umbral_caudal: float):
+                   eventos_umbral: list, eventosi: str, umbral_caudal: float) -> None:
   """recibe un dataframe (df21) con los 1's ya puestos, un string (eventosh) con el tipo de evento, una lista
   (eventos_umbral), otros string (eventosi) que es el evento umbral mayor, en caso de ser un evento medio y
    un flotante (umbral_caudal)con el valor del umbral, rellena las listas de eventos con bloques de eventos
@@ -239,7 +360,7 @@ def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: str,
     if df21[((df21.index >= inicio) & (df21.index <= df21.index.max())) & (df21[eventosh] == 0)].size == 0:
       final = df21.index.max()
     if (not ((eventosh == 'event_QB') | (eventosh == 'event_QTQ'))) | (
-    not (any(df21[eventosi][(df21.index >= inicio - dif) & (df21.index < final + dif)]))):
+            not (any(df21[eventosi][(df21.index >= inicio - dif) & (df21.index < final + dif)]))):
       if df21[(df21.index >= inicio) & (df21.index < final)].size == 0:
         pass
       else:
@@ -258,7 +379,7 @@ def contar_eventos(estado: EstadoIdeam, df21: pd.DataFrame, eventosh: str,
   # final = final_dia
 
 
-def org_alt(estado: EstadoIdeam):
+def org_alt(estado: EstadoIdeam) -> None:
   estado.reiniciar_alter()
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_alt = estado.df_umbrales['df_qb_alt']
@@ -295,7 +416,7 @@ def org_alt(estado: EstadoIdeam):
   estado.df_umbrales['df_qb_alt'] = df_qb_alt
 
 
-def formar_alter(estado: EstadoIdeam):
+def formar_alter(estado: EstadoIdeam) -> None:
   data_alter = estado.data_alter
   data_alter2 = estado.data_alter2
   df2 = estado.df2
@@ -313,15 +434,17 @@ def formar_alter(estado: EstadoIdeam):
     # print(i, "hahahahahah")
     # print(data_alter.index.month == 1, " iiiiiiiiiiiiiii")
     a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
-    data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
+    data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[
+      i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
     data_alter.loc[a_bool, 'check_3'] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
     b_bool = data_alter['Valor'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
     c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
     d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
     e_bool = data_alter['Valor'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
     f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
-    g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
-    data_alter.loc[c_bool,'Q_ajustado'] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
+    g_bool = d_bool & (
+      ~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
+    data_alter.loc[c_bool, 'Q_ajustado'] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
     data_alter.loc[f_bool, 'Q_ajustado'] = 0  # Q obs < aprov teorico = 0 #########
     data_alter.loc[g_bool, 'Q_ajustado'] = data_alter['Valor'][g_bool] - data_alter['check_3'][g_bool]  # #######
     data_alter['check_2'] = data_alter['Valor'] - data_alter['Q_ajustado']  # check 2 = Q obs - Q ajustado
@@ -329,7 +452,8 @@ def formar_alter(estado: EstadoIdeam):
   b_bool = data_alter['check_2'] < data_alter['check_3']  # Q ajustado es menor al minimo revisado
   data_alter.loc[a_bool, 'Q_ambiental'] = data_alter['Valor']  # los queQobs sean < al minrev no se le hace nada
   data_alter.loc[(~a_bool) & b_bool, 'Q_ambiental'] = data_alter['check_3']  # si el Qobs - Qaprov =min rev
-  data_alter.loc[(~a_bool) & (~b_bool), 'Q_ambiental'] = data_alter['check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
+  data_alter.loc[(~a_bool) & (~b_bool), 'Q_ambiental'] = data_alter[
+    'check_2']  # si Qobs> min rev y Qobs-Qaprov >min rev, Qobs-aQaprov
   data_alter['Q_aprov_real'] = data_alter['Valor'] - data_alter['Q_ambiental']  # qobs -qambs
   data_alter2 = data_alter[['Q_ambiental']].copy()
   data_alter2.rename(columns={'Q_ambiental': 'Valor'}, inplace=True)
@@ -338,15 +462,38 @@ def formar_alter(estado: EstadoIdeam):
   # print
 
 
-def org_df2_2(estado: EstadoIdeam, aprov, mes):  # porcentaje de aprovechamiento, mes, cambia el porcentaje de aprovechamiento de un mes escogido por el %escogido
-  """recibe un valor porcentual (aprov) y un valor entero (mes) y cambia el valor de aprovechamiento de ese mes ademas de cambiar el caudal aprovechado para ese mes"""
+def org_df2_2(estado: EstadoIdeam, aprov: float, mes: int) -> None:
+  """
+  Modifica el porcentaje de aprovechamiento y recalcula el caudal aprovechado para un mes específico.
+
+  Parámetros:
+  ----------
+  estado : EstadoIdeam
+    Objeto que contiene el DataFrame `df2` con la información de caudal.
+  aprov : float
+    Nuevo porcentaje de aprovechamiento a asignar (expresado como fracción, no en porcentaje).
+  mes : int
+    Número del mes (1-12) en el que se cambiará el valor de aprovechamiento.
+
+  Descripción:
+  -----------
+  - Filtra el DataFrame `df2` para seleccionar las filas correspondientes al mes indicado.
+  - Modifica la columna `'%_aprov'` con el nuevo valor `aprov`.
+  - Recalcula la columna `'Q_aprov'` como el producto entre `'Mean_rev'` y `'%_aprov'`.
+  - Actualiza el DataFrame `df2` en el objeto `estado`.
+
+  Retorna:
+  -------
+  None
+    La función modifica `estado.df2` en su lugar y no retorna ningún valor explícito.
+  """
   df2 = estado.df2
   df2.loc[df2.index.month == mes, '%_aprov'] = aprov
   df2['Q_aprov'] = df2['Mean_rev'] * df2['%_aprov']
   estado.df2 = df2
 
 
-def org_df2_1(estado: EstadoIdeam, df):
+def org_df2_1(estado: EstadoIdeam, df: pd.DataFrame) -> None:
   """coge los valores de data(dataframe global) y los usa para crear el df2(df global) con 12 filas y 3 columnas (promedio, min_rev y mean_rev) por mes."""
   #todo filtrar datos correctos enso
   print("hola_3")
@@ -362,7 +509,8 @@ def org_df2_1(estado: EstadoIdeam, df):
   for j in range(1, 13):
     # filtro los datos por año y mes para hacer el analisis
     data_filter = df[df.index.month == j]
-    row = [str(i) + str(-j), data_filter['Mean'].mean(), data_filter['Min_rev'].min(), data_filter['Mean_rev'].mean()] # cambiado
+    row = [str(i) + str(-j), data_filter['Mean'].mean(), data_filter['Min_rev'].min(),
+           data_filter['Mean_rev'].mean()]  # cambiado
     df2.loc[len(df2)] = row
   # data view
   df2['Fecha'] = pd.to_datetime(df2['Fecha'])
@@ -370,19 +518,14 @@ def org_df2_1(estado: EstadoIdeam, df):
   # print(df2)
   estado.df2 = df2
 
-def numeros_naturales():
-  n = 1
-  while True:
-    yield n
-    n += 1
 
-
-def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
+def prin_func(estado: EstadoIdeam) -> tuple[pd.DataFrame, pd.DataFrame]:
   print("hola_1")
   data = estado.data
   print("hola_1.5")
   # print(estado.data.head())
-  estado.df_month_mean = buscar_umbrales(estado, False)
+  calcular_df_resumen(estado)
+  # estado.df_month_mean = buscar_umbrales(estado, False)
   org_df2_1(estado, estado.df_month_mean)
   print("hola_2")
   for i in range(1, 13):
@@ -395,7 +538,8 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
   dif = segundo_dia - primer_dia
   estado.dif = dif
   nombrar_evento(estado, data, 'Valor')
-  contar_eventos(estado, data, 'event_QTR15', estado.listas_eventos['eventos_qtr15'], 'event_QTR15', estado.umbrales['QTR15'])
+  contar_eventos(estado, data, 'event_QTR15', estado.listas_eventos['eventos_qtr15'], 'event_QTR15',
+                 estado.umbrales['QTR15'])
   contar_eventos(estado, data, 'event_QB', estado.listas_eventos['eventos_qb'], 'event_QTR15', estado.umbrales['QB'])
   contar_eventos(estado, data, 'event_QTQ', estado.listas_eventos['eventos_qtq'], 'event_Q10', estado.umbrales['QTQ'])
   contar_eventos(estado, data, 'event_Q10', estado.listas_eventos['eventos_q10'], 'event_Q10', estado.umbrales['Q10'])
@@ -409,6 +553,8 @@ def prin_func(estado: EstadoIdeam) -> (pd.DataFrame, pd.DataFrame):
     calibrar_mes(estado, i)
   estado.data_alter = estado.data_alter2
   return estado.df2, estado.data_alter2
+
+
 # cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], 1) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], 1)
 # org_df2_2(estado, 1, 1)
 
@@ -434,7 +580,7 @@ def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int
   return abs(anti_tst) < abs(valor_confianza)
 
 
-def cumple(estado: EstadoIdeam, dfb:pd.DataFrame, dfa:pd.DataFrame, mes:int) -> bool:  # dfb =ref dfa = alterada
+def cumple(estado: EstadoIdeam, dfb: pd.DataFrame, dfa: pd.DataFrame, mes: int) -> bool:  # dfb =ref dfa = alterada
   sb = dfb['Magnitud'][dfb['mes'] == mes]
   sa = dfa['Magnitud'][dfa['mes'] == mes]
   boola = prueba_si_cumple(estado, sb, sa, mes, False, True)
@@ -445,6 +591,8 @@ def cumple(estado: EstadoIdeam, dfb:pd.DataFrame, dfa:pd.DataFrame, mes:int) -> 
   sa = dfa['Intensidad'][dfa['mes'] == mes]
   boolc = prueba_si_cumple(estado, sb, sa, mes, False, False)
   return (boola and boolb) & boolc
+
+
 # s1 serie de eventos, mes, mes, es_ref <- ref o no, es_duracion <- duracion o no
 
 
@@ -454,11 +602,11 @@ def prueba_porc(estado: EstadoIdeam, s1: pd.Series, mes: int, es_ref: bool, es_d
   num_anos = 0
   maxs = data.index.year.max()
   mins = data.index.year.min()
-  num_anos = maxs-mins+1
+  num_anos = maxs - mins + 1
   if es_ref:  # si es ref
-    porc_aprov = df2.iat[mes-1, 3]
+    porc_aprov = df2.iat[mes - 1, 3]
     tam_ref = s1.size
-    prueba_est = tam_ref/num_anos
+    prueba_est = tam_ref / num_anos
     if prueba_est > 0.05:  # si la prueba est es mayor al 5%
       if tam_ref > 1:  # si tiene mas de un dato
         return True
@@ -473,8 +621,7 @@ def prueba_porc(estado: EstadoIdeam, s1: pd.Series, mes: int, es_ref: bool, es_d
   return False
 
 
-def calibrar_mes(estado: EstadoIdeam, mess):
-  generador_2 = numeros_naturales()
+def calibrar_mes(estado: EstadoIdeam, mess: int) -> None:
   df_qtq_ref = estado.df_umbrales['df_qtq_ref']
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_ref = estado.df_umbrales['df_qb_ref']
@@ -491,17 +638,21 @@ def calibrar_mes(estado: EstadoIdeam, mess):
   mayor = 0
   while True:
     conteo += 1
-    lim_prov = (inferior+superior)/2
+    lim_prov = (inferior + superior) / 2
     org_df2_2(estado, lim_prov, mess)
     formar_alter(estado)
     org_alt(estado)
-    a = cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i)
-    # print(next(generador_2), "aaa", "calibrar_mes")
+    a = cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado,
+                                                                                                         estado.df_umbrales[
+                                                                                                           'df_qb_ref'],
+                                                                                                         estado.df_umbrales[
+                                                                                                           'df_qb_alt'],
+                                                                                                         i)
     if a:
       if lim_prov > mayor:
         mayor = lim_prov
       inferior = lim_prov
-      if abs(inferior-superior) < 0.01:
+      if abs(inferior - superior) < 0.01:
         return
     else:
       superior = lim_prov

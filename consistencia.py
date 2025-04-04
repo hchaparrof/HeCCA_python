@@ -23,12 +23,12 @@ def filtrar_datos(df, filter_dicts, min_valor, max_valor):
     dentro_rango_df = df[(df['slope'] >= min_valor) & (df['slope'] <= max_valor)]
 
     # Aplicar excepciones de ninio (puede ser menor)
-    ninio_years = filter_dicts['ninio']
-    excepciones_ninio = df[(df['Fecha'].isin(ninio_years)) & (df['slope'] < min_valor)]
+    ninio_anios = filter_dicts['ninio']
+    excepciones_ninio = df[(df['Fecha'].isin(ninio_anios)) & (df['slope'] < min_valor)]
 
     # Aplicar excepciones de ninia (puede ser mayor)
-    ninia_years = filter_dicts['ninia']
-    excepciones_ninia = df[(df['Fecha'].isin(ninia_years)) & (df['slope'] > max_valor)]
+    ninia_anios = filter_dicts['ninia']
+    excepciones_ninia = df[(df['Fecha'].isin(ninia_anios)) & (df['slope'] > max_valor)]
 
     # Combinar todos los datos dentro del rango y las excepciones
     dentro_rango_df = pd.concat([dentro_rango_df, excepciones_ninio, excepciones_ninia]).drop_duplicates().reset_index(

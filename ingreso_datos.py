@@ -5,6 +5,7 @@ import pandas as pd
 import estado_algoritmo
 from limpieza_datos import process_df, ErrorFecha
 import copy
+from mapa_anio import det_anio_hid
 
 
 def ejecutar_algoritmo_ruta(ruta_json: str) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
@@ -45,7 +46,7 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
   """
   objetos_estado = []
   if datos['organismo'] == 'anla':
-    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base']))
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico']))
 
   elif datos['organismo'] == 'ideam':
     extremos: list[pd.DataFrame] = []
@@ -88,7 +89,7 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
         extremos.append(pd.DataFrame())
       finally:
         pass
-    if datos['existencia_umbrales']:
+    if not datos['umbrales'] == -1:
       objetos_estado.append(
         estado_algoritmo.EstadoIdeam(df_limpio, datos,
                                      extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
@@ -97,13 +98,9 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
 
   elif datos['organismo'] == 'ambas':
     # Crear objeto para 'anla'
-    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base']))
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico']))
     # Crear objeto para 'ideam'
-    if datos['existencia_umbrales']:
-      objetos_estado.append(
-        estado_algoritmo.EstadoIdeam(df_limpio, datos))  # ['archivos']['archivo_base'], datos['umbrales']))
-    else:
-      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos['archivos']['archivo_base']))
+    objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos))
 
   return objetos_estado
 
@@ -122,7 +119,8 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
   df_limpio = procesar_datos(base, apoyo, areas)
   if df_limpio is None:
     return None
-
+  if datos['anio_hidrologico'] == -1:
+    datos['anio_hidrologico'] = det_anio_hid(base)
   objeto_base = crear_objeto_estado(df_limpio, datos)
 
   if datos["existencia_enso"]:
