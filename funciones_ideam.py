@@ -552,6 +552,7 @@ def prin_func(estado: EstadoIdeam) -> tuple[pd.DataFrame, pd.DataFrame]:
     print(f"empezando el {i} mes")
     calibrar_mes(estado, i)
   estado.data_alter = estado.data_alter2
+  print(estado.df2)
   return estado.df2, estado.data_alter2
 
 

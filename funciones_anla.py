@@ -36,7 +36,7 @@ def determinar_ajuste(estado: estado_algoritmo.EstadoAlgoritmo) -> None:
 	ajuste_seleccionado = mejor_ajuste(np.abs(normal_corr), 0,  # np.abs(lognorm_corr),
 																		 np.abs(gumball_corr), np.abs(pearson_corr),
 																		 np.abs(weibull_corr))
-	estado.dist_prob = ajuste_seleccionado
+	estado.ajuste = ajuste_seleccionado
 
 
 def caud_retor(data: pd.DataFrame, ajuste: int, tiempo_ret: float) -> float:

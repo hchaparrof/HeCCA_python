@@ -18,7 +18,7 @@ class EstadoAlgoritmo:
     self.str_apoyo = ""
     self.df_month_mean = pd.DataFrame()
     self.df_month_mean_rev = pd.DataFrame()
-    self.dist_prob: int = -1
+    # self.dist_prob: int = -1
     self.ajuste: int = -1
     self.anio_hidrologico: int = anio_hidrologico
     self.codigo_est: int = codigo_est
