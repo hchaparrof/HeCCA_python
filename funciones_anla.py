@@ -367,7 +367,7 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
 		for i in range(len(caudal_propuesto)):
 			caudal_propuesto[i] = abs(caudal_propuesto[i])
 		estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, estado.dist_prob, caudal_propuesto)
-		print(caudal_propuesto, "caudal_propuesto")
+		# print(caudal_propuesto, "caudal_propuesto")
 		# Utiliza la función comparar_resultados con el caudal propuesto
 
 		return (comparar_resultados(estado.resultados_ori, estado.resultados_alterada, caudal_propuesto),)
@@ -403,8 +403,8 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
 
 	toolbox.register("mutate", decorated_mutate(toolbox.mutate_raw, low, up))
 	toolbox.register("select", tools.selTournament, tournsize=3)
-	poblacion = toolbox.population(n=400)  # Tamaño de la población
-	n_generaciones = 50  # Número de generaciones
+	poblacion = toolbox.population(n=100)  # Tamaño de la población
+	n_generaciones = 25  # Número de generaciones
 	stats = tools.Statistics(lambda ind: ind.fitness.values)
 	stats.register("min", np.min)
 	stats.register("avg", np.mean)
@@ -425,30 +425,17 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
 	print("\nMejor individuo:", mejor_individuo)
 	print("Fitness del mejor individuo:", mejor_individuo.fitness.values[0])
 	print(C2_actual, "C2_actual")
-	# Inicializar variables para comparar los resultados
-	# resultados = []
-	# for metodo in metodos:
-	#   print(f"Probando el método: {metodo}")
-	#   resultado = minimize(
-	#     funcion_objetivo,
-	#     x0=propuesta_inicial,  # Valor inicial
-	#     method=metodo,  # Método de optimización
-	#     bounds=bounds if metodo in ['L-BFGS-B', 'TNC', 'trust-constr', 'COBYLA'] else None,
-	#     # Asignar bounds solo a los métodos que los aceptan
-	#     options={'disp': False}  # Evita la salida detallada durante la optimización
-	#   )
-	#   resultados.append((metodo, resultado.fun, resultado.x))
-	#   print(resultado.fun)
-	# # Mostrar los resultados para cada método
-	# mejor_metodo = min(resultados, key=lambda x: x[1])  # Seleccionamos el que tenga el menor valor de la función objetivo
-	# print("\nResultado final:")
-	# print(f"El mejor método es: {mejor_metodo[0]} con valor de la función objetivo: {mejor_metodo[1]}")
-	# print(f"Valores de caudal correspondientes: {mejor_metodo[2]}")
-	# print(resultado.x, "resultado")
 	estado.data_alter2 = estado.data_alter
+	crear_df2(estado, mejor_individuo)
+
 
 	return pd.DataFrame()
 
+def crear_df2(estado: estado_algoritmo.EstadoAnla, lista_caudales: list) -> None:
+	df = estado.data
+	estado.df2 = df.groupby(df.index.month).mean()
+	estado.df2['caud_aprov'] = pd.Series(lista_caudales, index=range(1, 13))
+	estado.df2['aprov'] = estado.df2['caud_aprov'] / estado.df2['Valor']
 
 def comparar_resultados(natural: estado_algoritmo.ResultadosAnla, alterado: estado_algoritmo.ResultadosAnla,
 												caudales: list) -> float:

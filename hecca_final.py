@@ -20,16 +20,21 @@ def export_resultados(array_onj: list, str_export: str) -> None:
 
 
 def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
-  return objeto.principal_funcion()
+  objeto.principal_funcion()
+  print("hola")
+  return objeto
 
-def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]):
+def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> tuple[estado_algoritmo.EstadoAnla, estado_algoritmo.EstadoIdeam]:
   if instancia_algoritmo is None:
     return None
+  print("hola_1")
+  print(type(instancia_algoritmo))
   for instance in instancia_algoritmo:
     instance.principal_funcion()
   array_ideam: list[estado_algoritmo.EstadoIdeam] = []
   array_anla: list[estado_algoritmo.EstadoAnla] = []
   hola = 0
+  print("hola_2")
   for obj in instancia_algoritmo:
     if isinstance(obj, estado_algoritmo.EstadoIdeam):
       array_ideam.append(obj)

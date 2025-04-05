@@ -37,16 +37,17 @@ def procesar_datos(base: pd.DataFrame, apoyo: Optional[pd.DataFrame] = None,
   return df_limpio
 
 
-def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_algoritmo.EstadoAlgoritmo]:
+def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -> list[estado_algoritmo.EstadoAlgoritmo]:
   """
 
   @param df_limpio: serie de datos sin datos faltantes.
   @param datos: diccionario de configuración valido
+  @param codigo_est: entero, el código de la estación en el ideam
   @return:
   """
   objetos_estado = []
   if datos['organismo'] == 'anla':
-    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico']))
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico'], codigo_est))
 
   elif datos['organismo'] == 'ideam':
     extremos: list[pd.DataFrame] = []
@@ -92,15 +93,15 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict) -> list[estado_alg
     if not datos['umbrales'] == -1:
       objetos_estado.append(
         estado_algoritmo.EstadoIdeam(df_limpio, datos,
-                                     extremos=extremos))  # ['archivos']['archivo_base'], datos['umbrales']))
+                                     extremos=extremos, codigo_est=codigo_est))  # ['archivos']['archivo_base'], datos['umbrales']))
     else:
-      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos))
+      objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos, codigo_est=codigo_est))
 
   elif datos['organismo'] == 'ambas':
     # Crear objeto para 'anla'
-    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico']))
+    objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico'], codigo_est=codigo_est))
     # Crear objeto para 'ideam'
-    objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos))
+    objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos,codigo_est=codigo_est))
 
   return objetos_estado
 
@@ -115,13 +116,13 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
   # print(datos)
   apoyo = pd.read_csv(datos['archivos']['archivo_apoyo']) if (datos['archivos']['archivo_apoyo'] != -1) else None
   areas = datos['areas'] if (datos['areas'] != -1) else None
-
+  codigo_est = base['CodigoEstacion'].min()
   df_limpio = procesar_datos(base, apoyo, areas)
   if df_limpio is None:
     return None
   if datos['anio_hidrologico'] == -1:
     datos['anio_hidrologico'] = det_anio_hid(base)
-  objeto_base = crear_objeto_estado(df_limpio, datos)
+  objeto_base = crear_objeto_estado(df_limpio, datos, codigo_est)
 
   if datos["existencia_enso"]:
     if len(objeto_base) == 2:

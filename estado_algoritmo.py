@@ -7,7 +7,7 @@ import IhaEstado
 
 
 class EstadoAlgoritmo:
-  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int):
+  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int):
     self.ruta = ruta_m
     self.data = data_inicial
     self.data_alter = pd.DataFrame()
@@ -21,6 +21,7 @@ class EstadoAlgoritmo:
     self.dist_prob: int = -1
     self.ajuste: int = -1
     self.anio_hidrologico: int = anio_hidrologico
+    self.codigo_est: int = codigo_est
     # self.preparacion_comun()
 
   def preparacion_comun(self, *args):
@@ -45,9 +46,9 @@ class EstadoAlgoritmo:
 
 class EstadoIdeam(EstadoAlgoritmo):
   def __init__(self, data_inicial: pd.DataFrame, data_dict: dict,
-               extremos: list[Optional[pd.DataFrame]] = None):
+               extremos: list[Optional[pd.DataFrame]] = None, codigo_est: int = -1):
     # print(data_dict)
-    super().__init__(data_inicial, data_dict['archivos']['archivo_base'], data_dict['anio_hidrologico'])
+    super().__init__(data_inicial, data_dict['archivos']['archivo_base'], data_dict['anio_hidrologico'], codigo_est)
     # print(extremos)
     if extremos:
       pass
@@ -122,8 +123,8 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
   anios_retorn: list = [2, 5, 10, 25]
-  def __init__(self, data_inicial, ruta_m: str, anio_hidrologico):
-    super().__init__(data_inicial, ruta_m, anio_hidrologico)
+  def __init__(self, data_inicial, ruta_m: str, anio_hidrologico: int, codigo_est: int):
+    super().__init__(data_inicial, ruta_m, anio_hidrologico, codigo_est)
     self.data_ref: pd.DataFrame = pd.DataFrame()
     self.propuesta_inicial_ref: list[float] = [0] * 12
     self.caud_final: list[float] = [0] * 12
