@@ -14,21 +14,21 @@ from deap import base, creator, tools, algorithms
 def determinar_ajuste(estado: estado_algoritmo.EstadoAlgoritmo) -> None:
 	df = estado.data
 	array_valor = df['Valor'].to_numpy()
-	mun, stdn = norm.fit(df['Valor'])
+	mun, stdn = norm.fit(array_valor)
 	# pln = lognorm.fit(df['Valor'])
-	mug, beta = gumbel_r.fit(df['Valor'])
-	a1, m, s = pearson3.fit(df['Valor'])
-	shape, loc, scale = weibull_min.fit(df['Valor'])
+	mug, beta = gumbel_r.fit(array_valor)
+	a1, m, s = pearson3.fit(array_valor)
+	shape, loc, scale = weibull_min.fit(array_valor)
 	vesn = normal_distr(array_valor, mun, stdn)
 	# vesln = lognormal_distr(array_valor, pln[0], pln[2])
 	vesg = gumball_distr(array_valor, mug, beta)
 	vesw = weibull_min.pdf(array_valor, shape, loc, scale)
 	vesp = pearson3.pdf(array_valor, a1, m, s)
-	gumball_corr = np.corrcoef(df['Valor'], vesg)[0, 1]
-	normal_corr = np.corrcoef(df['Valor'], vesn)[0, 1]
-	pearson_corr = np.corrcoef(df['Valor'], vesp)[0, 1]
+	gumball_corr = np.corrcoef(array_valor, vesg)[0, 1]
+	normal_corr = np.corrcoef(array_valor, vesn)[0, 1]
+	pearson_corr = np.corrcoef(array_valor, vesp)[0, 1]
 	# lognorm_corr = np.corrcoef(df['Valor'], vesln)[0, 1]
-	weibull_corr = np.corrcoef(df['Valor'], vesw)[0, 1]
+	weibull_corr = np.corrcoef(array_valor, vesw)[0, 1]
 
 	# Sacar el mayor de las correlaciones y sacar en 10 años cuanto es el 7Q10
 	# tiempo_retorno = tiempo_ret
@@ -161,7 +161,7 @@ def calcular_7q10(df_completo: pd.DataFrame, ajuste) -> list:
 
 
 def calcular_q95(estado: estado_algoritmo.EstadoAnla):
-	ajuste = estado.dist_prob
+	ajuste = estado.ajuste
 	meses: list = [pd.DataFrame()] * 12
 	q95s: list = [0] * 12
 	for i in range(1, 13):
@@ -351,14 +351,14 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
 	determinar_ajuste(estado)
 	# calculo elementos iniciales
 	estado.df_month_mean = general_month_mean(estado.data)
-	estado.q7_10 = calcular_7q10(estado.data, estado.dist_prob)
+	estado.q7_10 = calcular_7q10(estado.data, estado.ajuste)
 	estado.q95 = calcular_q95(estado)
 	estado.data.to_csv("estado_data_prueba_1.csv")
 	estado.propuesta_inicial_ref = np.minimum(estado.q7_10, estado.q95)
 	# calculo estado normal
-	estado.resultados_ori = calc_resultados(estado.data, estado.dist_prob)
+	estado.resultados_ori = calc_resultados(estado.data, estado.ajuste)
 	# calculo estado referencia
-	estado.data_ref, estado.resultados_ref = calc_alterado(estado.data, estado.dist_prob, estado.propuesta_inicial_ref)
+	estado.data_ref, estado.resultados_ref = calc_alterado(estado.data, estado.ajuste, estado.propuesta_inicial_ref)
 
 	def funcion_objetivo(caudal_propuesto) -> float:
 		"""
@@ -366,7 +366,7 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
     """
 		for i in range(len(caudal_propuesto)):
 			caudal_propuesto[i] = abs(caudal_propuesto[i])
-		estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, estado.dist_prob, caudal_propuesto)
+		estado.data_alter, estado.resultados_alterada = calc_alterado(estado.data, estado.ajuste, caudal_propuesto)
 		# print(caudal_propuesto, "caudal_propuesto")
 		# Utiliza la función comparar_resultados con el caudal propuesto
 

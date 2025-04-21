@@ -13,11 +13,11 @@ diccionario_espejo: dict = {
     "archivo_apoyo": -1,
     "archivo_enso": "oni_3.csv"
   },
-  "existencia_enso": False,
+  "existencia_enso": True,
   "areas": -1,
   "umbrales": -1,
   "estacion_hidrologica": "Nombre_de_la_estacion",
-  "organismo": "ideam",
+  "organismo": "ambas",
   "revision_iha": -1,
   "anio_hidrologico": -1
 }
@@ -40,9 +40,10 @@ def procesar_estacion(ruta_archivo):
     except Exception as e:
         print(f"Error procesando {ruta_archivo}: {e}")
         return []
-
+def main_2():
+    return procesar_estacion("C://Users//ASUS//Desktop//datos//unal//semillero//repo_hecca//est_12027050.csv")
 if __name__ == "__main__":
-    procesar_estacion("C://c//Users//ASUS//Desktop//datos//unal//semillero//repo_hecca//est_12027050")
+    main_2()
 if __name__ == "__main__2":
     estaciones = [
         os.path.join(RUTAESTACIONES, archivo)

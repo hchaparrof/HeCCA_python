@@ -22,7 +22,7 @@ def find_months(text: str) -> bool:
 	return bool(all_matches)
 
 
-def formato_fecha(datos: pd.DataFrame) -> tuple[int, str]:
+def formato_fecha(datos: pd.DataFrame) -> tuple[int, Optional[str]]:
 	"""
   @param datos: pd.DataFrame con alguna fecha formatada
   @return: tuple (int: codigo_validez: (0: formato valido, retorna str; 1: formato valido no ambiguo no retorna str;
@@ -38,10 +38,10 @@ def formato_fecha(datos: pd.DataFrame) -> tuple[int, str]:
 		c -= 2
 	b = datos.loc[c + 1]
 	if len(a['Fecha'].iloc[0]) < 10:
-		return 2, ""
+		return 2, None
 	if find_months(a['Fecha'].iloc[0]):
-		return 1, ""
-	excedente = ""
+		return 1, None
+	excedente = None
 	num_dos_punt = a['Fecha'].iloc[0].count(":")
 	if num_dos_punt == 0:
 		pass
@@ -182,7 +182,7 @@ def summarize_missing_values(complete_data: pd.DataFrame) -> float:
 
 """Llenado completo"""
 
-
+@DeprecationWarning
 def funcion_miguel(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> bool:
 	return True
 	# if df_apoyo:
@@ -196,7 +196,7 @@ def funcion_miguel(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> bool
 	# todo esto
 
 
-def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tuple = None) -> pd.DataFrame | None:
+def process_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None, areas: Optional[tuple] = None) -> Optional[pd.DataFrame]:
 	"""
     Procesa un DataFrame con o sin un DataFrame de apoyo para llenar los valores NaN en el primer DataFrame.
 
@@ -214,15 +214,7 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
     pandas.DataFrame
         El DataFrame df_base procesado con los valores NaN reemplazados, el formato de salida es index: Fecha y 'cuenca-base' para los valores de caudal
     """
-	# todo lo que esta haciendo miguel
-	if funcion_miguel(df_base, df_apoyo):
-		pass
-	else:
-		return None
-	if df_apoyo is not None:
-		df_base, df_apoyo = organize_df(df_base, df_apoyo)
-	else:
-		df_base = organize_df(df_base)
+	df_base, df_apoyo = organize_df(df_base, df_apoyo)
 	if areas is not None:
 		df_base = df_base / areas[0]
 		df_apoyo = df_apoyo / areas[1]
@@ -245,7 +237,7 @@ def process_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None, areas: tupl
 	return df_return
 
 
-def organize_df(df_base: pd.DataFrame, df_apoyo: pd.DataFrame = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) -> tuple[pd.DataFrame, pd.DataFrame]:
 	"""
     Esta función recibe dos DataFrames, uno obligatorio `df_base` y otro opcional `df_apoyo`.
     La función convierte la columna 'Fecha' en tipo datetime y

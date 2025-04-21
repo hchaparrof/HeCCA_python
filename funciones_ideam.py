@@ -110,6 +110,8 @@ def calcular_df_resumen(estado: EstadoIdeam) -> None:
     min_rev_value = data_filter.loc[data_filter['Valor'] > umbral_Q10, 'Valor'].min()
     mean_rev_value = data_filter.loc[
       (data_filter['Valor'] > umbral_Q10) & (data_filter['Valor'] < umbral_Q15), 'Valor'].mean()
+    if mean_rev_value == np.nan:
+      mean_rev_value = mean_value
     row = [f"{year}-{month}", min_value, max_value, mean_value, min_rev_value, mean_rev_value]
     df.loc[len(df)] = row
   #########
