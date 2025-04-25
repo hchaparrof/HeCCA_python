@@ -24,7 +24,7 @@ def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
   print("hola")
   return objeto
 
-def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> tuple[estado_algoritmo.EstadoAnla, estado_algoritmo.EstadoIdeam]:
+def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]:
   if instancia_algoritmo is None:
     return None
   print("hola_1")
@@ -38,7 +38,7 @@ def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAl
   for obj in instancia_algoritmo:
     if isinstance(obj, estado_algoritmo.EstadoIdeam):
       array_ideam.append(obj)
-      obj.data_alter.to_csv('datos_' + str(hola) + '.csv')
+      # obj.data_alter.to_csv('datos_' + str(hola) + '.csv')
       hola += 1
     elif isinstance(obj, estado_algoritmo.EstadoAnla):
       array_anla.append(obj)

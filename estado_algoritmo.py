@@ -15,7 +15,7 @@ class EstadoAlgoritmo:
     self.primer_dia = 1
     self.dif = 1
     self.final_dia = 1
-    self.str_apoyo = ""
+    self.str_apoyo = "normal"
     self.df_month_mean = pd.DataFrame()
     self.df_month_mean_rev = pd.DataFrame()
     # self.dist_prob: int = -1

@@ -436,16 +436,16 @@ def formar_alter(estado: EstadoIdeam) -> None:
     # print(i, "hahahahahah")
     # print(data_alter.index.month == 1, " iiiiiiiiiiiiiii")
     a_bool = data_alter.index.month == i  # serie booleana si pertenece al mes correcto
-    data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[
-      i - 1, 4]  # aprovechamiento teorico = aprovechamiento teorico de ese mes ########
+    data_alter.loc[a_bool, 'Aprov_teo'] = df2.iat[i - 1, 4]  # aprovechamiento teorico = 
+    # aprovechamiento teorico de ese mes ########
     data_alter.loc[a_bool, 'check_3'] = df2.iat[i - 1, 1]  # check 3 igual al minimo revisado ########
     b_bool = data_alter['Valor'] > data_alter['Aprov_teo']  # s.b. si el Q obs es > que el aprov teorico
     c_bool = a_bool & b_bool  # s.b. si pertenece al mes correcto y es Q obs es > que el aprov teorico
     d_bool = a_bool & (~b_bool)  # s.b. si pertenece al mes correcto y es Q obs es < que el aprov teorico
     e_bool = data_alter['Valor'] < data_alter['check_3']  # s.b. si el Q obs es < al minimo revisado
     f_bool = d_bool & e_bool  # Si mes correcto & Q obs < aprov teo & Q obs < check 3
-    g_bool = d_bool & (
-      ~e_bool)  # s.b. si pertenece al mes correcto y el Q obs es > al minimo revisado & Q obs es < aprov teorico
+    g_bool = d_bool & (~e_bool)  # s.b. si pertenece al mes correcto y 
+    # el Q obs es > al minimo revisado & Q obs es < aprov teorico
     data_alter.loc[c_bool, 'Q_ajustado'] = df2.iat[i - 1, 4]  # Q obs > aprov teorico = aprov teorico #########
     data_alter.loc[f_bool, 'Q_ajustado'] = 0  # Q obs < aprov teorico = 0 #########
     data_alter.loc[g_bool, 'Q_ajustado'] = data_alter['Valor'][g_bool] - data_alter['check_3'][g_bool]  # #######
