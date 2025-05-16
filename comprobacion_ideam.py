@@ -5,7 +5,7 @@ from estado_algoritmo import EstadoIdeam
 from funciones_ideam import *
 
 
-def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int, duracion, magintud):
+def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int, duracion: bool, magintud: bool) -> bool:
   prub = prueba_porc(estado, sb, mes, True, duracion)
   prua = prueba_porc(estado, sa, mes, False, duracion)
   mean_base = promedio_serie(sb, prub)
@@ -26,7 +26,7 @@ def prueba_si_cumple(estado: EstadoIdeam, sb: pd.Series, sa: pd.Series, mes: int
   return abs(anti_tst) < abs(valor_confianza)
 
 
-def cumple(estado: EstadoIdeam, dfb, dfa, mes):  # dfb =ref dfa = alterada
+def cumple(estado: EstadoIdeam, dfb: pd.DataFrame, dfa: pd.DataFrame, mes: int) -> bool:  # dfb =ref dfa = alterada
   sb = dfb['Magnitud'][dfb['mes'] == mes]
   sa = dfa['Magnitud'][dfa['mes'] == mes]
   boola = prueba_si_cumple(estado, sb, sa, mes, False, True)
@@ -40,7 +40,7 @@ def cumple(estado: EstadoIdeam, dfb, dfa, mes):  # dfb =ref dfa = alterada
 # s1 serie de eventos, mes, mes, es_ref <- ref o no, es_duracion <- duracion o no
 
 
-def Prueba_porc(estado: EstadoIdeam, s1, mes, es_ref, es_duracion):
+def Prueba_porc(estado: EstadoIdeam, s1: pd.Series, mes: int, es_ref: bool, es_duracion: bool) -> bool:
   data = estado.data
   df2 = estado.df2
   num_anos = 0
@@ -65,7 +65,7 @@ def Prueba_porc(estado: EstadoIdeam, s1, mes, es_ref, es_duracion):
   return False
 
 
-def calibrar_mes(estado: EstadoIdeam, mess):
+def calibrar_mes(estado: EstadoIdeam, mess: int) -> None:
   df_qtq_ref = estado.df_umbrales['df_qtq_ref']
   df_qtq_alt = estado.df_umbrales['df_qtq_alt']
   df_qb_ref = estado.df_umbrales['df_qb_ref']

@@ -142,7 +142,7 @@ def normal_distr(x_normal, mun_normal, stdn_normal) -> float:
 	return (1 / (stdn_normal * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x_normal - mun_normal) / stdn_normal) ** 2)
 
 
-def calcular_7q10(df_completo: pd.DataFrame, ajuste) -> list:
+def calcular_7q10(df_completo: pd.DataFrame, ajuste: int) -> list:
 	"""
   Calcula los 7q10
   @param df_completo:
@@ -322,6 +322,7 @@ def validate_and_fix(individual, low, up):
 
 
 # Decorar el operador de mutación para incluir la validación
+
 def decorated_mutate(func, low, up):
 	"""
   Decora un operador de mutación para validar y corregir los individuos.
@@ -342,7 +343,7 @@ def decorated_mutate(func, low, up):
 	return wrapper
 
 
-def prin_func(estado: estado_algoritmo.EstadoAnla) -> pd.DataFrame:
+def prin_func(estado: estado_algoritmo.EstadoAnla) -> None:
 	creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Negativo para minimizar
 	creator.create("Individual", list, fitness=creator.FitnessMin)
 

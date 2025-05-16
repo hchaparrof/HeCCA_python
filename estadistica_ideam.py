@@ -2,9 +2,10 @@ import numpy as np
 from scipy.stats import f
 from scipy.stats import ttest_ind
 import scipy.stats as stats
+import pandas as pd
 
 
-def mad_2(datos_4):
+def mad_2(datos_4: pd.Series) -> float:
   """
   Calcula la desviación absoluta media (MAD) de una serie de datos.
   """
@@ -13,7 +14,7 @@ def mad_2(datos_4):
   return deviations.mean()
 
 
-def var_test(x, y, ratio=1, alternative="two-sided", conf_level=0.95):
+def var_test(x: np.typing.ArrayLike, y, ratio=1, alternative="two-sided", conf_level=0.95) -> float:
   # Eliminar valores faltantes
   x = np.array(x)[np.isfinite(x)]
   y = np.array(y)[np.isfinite(y)]
@@ -54,7 +55,7 @@ def var_test(x, y, ratio=1, alternative="two-sided", conf_level=0.95):
   return htest['p.value']
 
 
-def ttest_pvalue_scipy(d1, d2, equal_vari):
+def ttest_pvalue_scipy(d1, d2, equal_vari) -> float:
   """Recibe dos series de datos numpy y un booleano de si las varianzas son iguales.
    Devuelve el resultado del t-test de scipy.
    """
@@ -62,23 +63,23 @@ def ttest_pvalue_scipy(d1, d2, equal_vari):
   return a[1]
 
 
-def inv_t_test_b(alfa, free_deg):
+def inv_t_test_b(alfa: float, free_deg: int) -> float:
   """recibe un valor flotante (alfa) y un valor entero (free_deg) y devuelve el t test inverso de forma b"""
   return stats.t.ppf((1 - (1 - alfa) / 2), free_deg)
 
 
-def inv_t_test_a(alfa, free_deg):
+def inv_t_test_a(alfa: float, free_deg: int) -> float:
   """recibe un valor flotante (alfa) y un valor entero (free_deg) y devuelve el t test inverso de forma a"""
   return stats.t.ppf((1 - alfa / 2), free_deg)
 
 
-def promedio_serie(s1, prueba):
+def promedio_serie(s1: pd.Series, prueba: bool):
   if prueba:
     return s1.mean()
   return -1
 
 
-def varianza_serie(s1, prueba, magnitud, alt):
+def varianza_serie(s1: pd.Series, prueba: bool, magnitud: bool, alt: bool) -> float:
   if prueba:
     if alt:
       return s1.var()
@@ -91,7 +92,7 @@ def varianza_serie(s1, prueba, magnitud, alt):
   return -1
 
 
-def prueba_f_serie(s1, s2, var1, var2):  # -1 ="no calcular" -2="revisar"
+def prueba_f_serie(s1: pd.Series, s2: pd.Series, var1: float, var2: float) -> float:  # -1 ="no calcular" -2="revisar"
   if var1 == -1:
     return -1
   if (var2 == 0) or (var2 == -2):

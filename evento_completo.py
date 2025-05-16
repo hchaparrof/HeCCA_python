@@ -1,3 +1,4 @@
+import pandas as pd
 class EventoCompleto:
   """
     Reune todas las caracteristicas del evento como
@@ -8,10 +9,10 @@ class EventoCompleto:
   intensidad = -1.0  # magnitud del evento sobre la duracion m3/(s*día)
   duracion = -1  # duracion en días del evento (día)
 
-  def __init__(self, df1, umbral, umbralstr):
-    self.df1 = df1.copy()
-    self.umbral = umbral
-    self.umbralstr = umbralstr
+  def __init__(self, df1: pd.DataFrame, umbral: float, umbralstr: str):
+    self.df1: pd.DataFrame = df1.copy()
+    self.umbral: float = umbral
+    self.umbralstr: str = umbralstr
     self.organizar_df()
     self.set_intensidad()
     self.organizar_mes()

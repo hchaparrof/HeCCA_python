@@ -11,7 +11,7 @@ RUTAESTACIONES = 'C://Users//ASUS//Desktop//datos//unal//semillero//CAUDAL//resu
 RUTARESULTADOS = 'C://Users//ASUS//Desktop//datos//unal//semillero//repo_hecca//resultados//'
 diccionario_espejo: dict = {
   "archivos": {
-    "archivo_base": "C:/Users/ASUS/Desktop/datos/unal/semillero/repo_hecca/est_25027400.csv",
+    "archivo_base": "C://Users//ASUS//Desktop//datos//unal//semillero//repo_hecca//est_12027050.csv",
     "archivo_maximos": -1,
     "archivo_minimos": -1,
     "archivo_apoyo": -1,
@@ -21,7 +21,7 @@ diccionario_espejo: dict = {
   "areas": -1,
   "umbrales": -1,
   "estacion_hidrologica": "Nombre_de_la_estacion",
-  "organismo": "ambas",
+  "organismo": "ideam",
   "revision_iha": -1,
   "anio_hidrologico": -1
 }
@@ -37,7 +37,7 @@ def procesar_estacion(ruta_archivo):
     diccionario_local["archivos"]["archivo_base"] = ruta_archivo
 
     try:
-        objetos:Optional[list[estado_algoritmo.EstadoAlgoritmo]] = generar_algoritmo(diccionario_local)
+        objetos:Optional[list[estado_algoritmo.EstadoAlgoritmo]] = generar_algoritmo(diccionario_espejo)
         print(objetos)
         resultados_locales = ejecutar_bloque(objetos)
         return resultados_locales

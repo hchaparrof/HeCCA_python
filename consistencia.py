@@ -6,7 +6,7 @@ import os
 import json
 
 
-def filtrar_datos(df, filter_dicts, min_valor, max_valor):
+def filtrar_datos(df: pd.DataFrame, filter_dicts: dict, min_valor: float, max_valor: float) -> tuple[pd.Series, pd.Series]:
     """
     Filtra los datos del DataFrame según el rango general y excepciones definidas en el diccionario.
 
@@ -46,7 +46,7 @@ def filtrar_datos(df, filter_dicts, min_valor, max_valor):
     return fuera_rango_df1, dentro_rango_df1
 
 
-def procesar_archivos_csv(csv_folder, json_file):
+def procesar_archivos_csv(csv_folder: str, json_file: str) -> None:
     """
     Procesa y crea todos los archivos CSV en una carpeta, de caudal acumulado, años inconsistentes
      y consitentes, ademas realiza las graficas con el análisis de regresión lineal,
@@ -215,9 +215,3 @@ def homogeneidad_kendall(df: pd.DataFrame) -> bool:
   sum_ti = datos_usables_anuales['TI'].sum()
   s_mayor = sum_si - sum_ti
   return s_mayor < VCRITICA
-
-# Ejemplo de llamada a la función
-# csv_folder = 'estaciones_consistencia_csv'
-# json_file = 'enso.json'
-#
-# procesar_archivos_csv(csv_folder, json_file)

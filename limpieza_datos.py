@@ -51,7 +51,7 @@ def formato_fecha(datos: pd.DataFrame) -> tuple[int, Optional[str]]:
 		excedente = " %H:%M:%S"
 	else:
 		raise ErrorFecha("no se entiende el formato de fecha, por favor"
-										 " cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
+						" cambielo a un formato sin ambiguedades, recomendamos yyyy/mm/dd")
 	str_year = "%Y"
 	str_month = "%m"
 	str_day = "%d"
@@ -237,7 +237,7 @@ def process_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None, a
 	return df_return
 
 
-def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) -> tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 	"""
     Esta función recibe dos DataFrames, uno obligatorio `df_base` y otro opcional `df_apoyo`.
     La función convierte la columna 'Fecha' en tipo datetime y
@@ -281,7 +281,7 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) 
 		return base
 
 
-def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) ->tuple[pd.DataFrame, pd.DataFrame]:
+def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) ->tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 	"""
     Recibe dos DataFrames, `df_base` y Optional[df_apoyo].
     convierte la columna 'Fecha' en tipo datetime y
@@ -323,7 +323,7 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) 
 		apoyo = quitar_anio(apoyo, anios)
 		return base, apoyo
 	else:
-		return base
+		return base, None
 
 
 def anios_vacios(df_propio: pd.DataFrame) -> tuple[pd.DataFrame, set]:
