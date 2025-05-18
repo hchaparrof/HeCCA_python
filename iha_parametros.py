@@ -46,22 +46,6 @@ def Iha_parameter1(data, start_year, end_year):  # paramétrico
 	e.rename(columns={'mean': 'Valor'}, inplace=True)
 	return e
 
-
-# """Se crea el dataframe donde se guardaran los parametros del grupo 1"""
-# Group1_IHA = pd.DataFrame(index=range(1, 13), columns=range(start_year, end_year+1))
-# """Se crea el rango de fechas para el año"""
-# for year in range(start_year, end_year+1):
-#   for month in range(1, 13):
-#     monthly_data = data[(data['Year'] == year) & (data['Month'] == month)]
-#     if not monthly_data.empty:
-#       mean_value = np.nanmean(monthly_data['Valor'])
-#       Group1_IHA.loc[month, year] = mean_value
-#     else:
-#       Group1_IHA.loc[month, year] = np.nan
-# # print(Group1_IHA.head())
-# return armar_df((Group1_IHA.mean(axis=1), Group1_IHA.std(axis=1)))
-
-
 def Iha_parameter2(data, start_year, end_year):
 	"""Parametros Grupo_2 calcula la magnitud y duración de caudales anuales extremos,
   determina el caudal anual minimo y maximo para diferentes duraciones (1 dia, 3 dias, 7 dias, 30 dias y 90 dias)

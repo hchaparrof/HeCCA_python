@@ -44,7 +44,7 @@ def formato_fecha(datos: pd.DataFrame) -> tuple[int, Optional[str]]:
 	excedente = None
 	num_dos_punt = a['Fecha'].iloc[0].count(":")
 	if num_dos_punt == 0:
-		pass
+		excedente = ""
 	elif num_dos_punt == 1:
 		excedente = " %H:%M"
 	elif num_dos_punt == 2:

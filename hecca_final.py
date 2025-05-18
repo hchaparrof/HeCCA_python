@@ -12,19 +12,19 @@ def export_resultados(array_onj: list, str_export: str) -> None:
   for i, instancia in enumerate(array_onj):
     print(f"{i}: {instancia.data_alter2}", "hola_23")
     caudales_array[i] = instancia.data_alter[['Valor']]
-  if caudales_array:
-    df_total = pd.concat(caudales_array).sort_index().copy()
-    df_total.sort_index(inplace=True)
-    caudales_resultado = df_total.groupby(df_total.index).max()
-    caudales_resultado.to_csv(str_export)
+    if caudales_array:
+      df_total = pd.concat(caudales_array).sort_index().copy()
+      df_total.sort_index(inplace=True)
+      caudales_resultado = df_total.groupby(df_total.index).max()
+      caudales_resultado.to_csv(str_export)
 
 
-def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo):
+def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo) -> estado_algoritmo.EstadoAlgoritmo:
   objeto.principal_funcion()
   print("hola")
   return objeto
 
-def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]:
+def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]]:
   if instancia_algoritmo is None:
     return None
   print("hola_1")
@@ -43,6 +43,7 @@ def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAl
     elif isinstance(obj, estado_algoritmo.EstadoAnla):
       array_anla.append(obj)
   return array_anla, array_ideam
+
 def main():
   instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  
   resultados = ejecutar_bloque(instancia_algoritmo)

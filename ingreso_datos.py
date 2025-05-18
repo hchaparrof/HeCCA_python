@@ -37,7 +37,7 @@ def procesar_datos(base: pd.DataFrame, apoyo: Optional[pd.DataFrame] = None,
   return df_limpio
 
 
-def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -> list[estado_algoritmo.EstadoAlgoritmo]:
+def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
   """
 
   @param df_limpio: serie de datos sin datos faltantes.
@@ -103,7 +103,9 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -
                                      extremos=extremos, codigo_est=codigo_est))  # ['archivos']['archivo_base'], datos['umbrales']))
     else:
       objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos, codigo_est=codigo_est))
-
+  else:
+    print("error: no se entiende el procedimiento a escoger")
+    return None
   # elif datos['organismo'] == 'ambas':
     # Crear objeto para 'anla'
   #  objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico'], codigo_est=codigo_est))
