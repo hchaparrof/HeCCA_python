@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 import numpy as np
 import pandas as pd
+import json
 from datetime import datetime as today_date_time
 from sklearn.linear_model import LinearRegression
 import re
@@ -236,6 +237,24 @@ def process_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None, a
 	# df_return.rename(columns={'Valor': 'cuenca-base'}, inplace=True)
 	return df_return
 
+def parse_dict_fe(json_entrada: dict) -> pd.DataFrame:
+  start_date = json_entrada['data'][0]['data'][0]['startDate']
+  final_date = json_entrada['data'][0]['data'][0]['endDate']
+  Valor = json_entrada['data'][0]['data'][0]['series']
+
+  date_range = pd.date_range(start=start_date, end=final_date)
+  df_new = pd.DataFrame({'Valor': Valor}, index=date_range)
+
+  # Reset the index to a numerical index starting from 0
+  df_new = df_new.reset_index(drop=False)
+
+  # Rename the old index column to 'Fecha'
+  df_new = df_new.rename(columns={'index': 'Fecha'})
+
+  # Convert 'Fecha' column to string and format
+  df_new['Fecha'] = df_new['Fecha'].astype(str).str.slice(0, 10)
+  df_new['Valor'] = pd.to_numeric(df_new['Valor'], errors='coerce')
+  return df_new
 
 def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) -> tuple[pd.DataFrame, Optional[pd.DataFrame]]:
 	"""
@@ -278,7 +297,7 @@ def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) 
 		apoyo = quitar_anio(apoyo, anios)
 		return base, apoyo
 	else:
-		return base
+		return (base, None)
 
 
 def organize_df(df_base: pd.DataFrame, df_apoyo: Optional[pd.DataFrame] = None) ->tuple[pd.DataFrame, Optional[pd.DataFrame]]:
