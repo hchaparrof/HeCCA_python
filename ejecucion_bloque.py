@@ -87,3 +87,88 @@ if __name__ == "__main__":
     for resultado in resultados:
         guardar_datos(resultado)
     print(f"Se procesaron {len(resultados)} resultados.")
+def procesar_cuenca(ruta_principal: str, ruta_secundaria: str,
+                    area_principal: float, area_secundaria: float):
+
+    dicc_local = copy.deepcopy(diccionario_espejo)
+    dicc_local["archivos"]["archivo_base"] = ruta_principal
+    dicc_local["archivos"]["archivo_apoyo"] = ruta_secundaria
+    dicc_local["areas"] = [area_principal, area_secundaria]
+    
+
+    try:
+        objetos: Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]] = generar_algoritmo(dicc_local)
+        print("objetos", objetos, type(objetos))
+        if objetos is None or not objetos[1]:
+            print(f"No se generaron resultados válidos para {ruta_principal}")
+            return "sin_resultado"
+
+        ideam_objs = objetos[1]
+        cuenca_nombre = os.path.basename(ruta_principal).replace(".csv", "")
+
+        for ideam in ideam_objs:
+            ideam.principal_funcion()
+            str_apoyo = ideam.str_apoyo or "sin_nombre"
+            carpeta_resultados = f"C://Users//ASUS//Desktop//datos//unal//trabajo de grado//resultados//{str_apoyo}"
+            os.makedirs(carpeta_resultados, exist_ok=True)
+
+            # Guardar los datos
+            ideam.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=False)
+            ideam.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=False)
+
+            # Umbrales simples
+            df_umbrales_csv = pd.DataFrame(list(ideam.umbrales.items()), columns=["umbral", "valor"])
+            df_umbrales_csv.to_csv(os.path.join(carpeta_resultados, f"umbrales_{cuenca_nombre}.csv"), index=False)
+
+            # Umbrales DataFrame
+            for nombre, df in ideam.df_umbrales.items():
+                if not df.empty:
+                    nombre_archivo = f"{nombre}_{cuenca_nombre}.csv"
+                    df.to_csv(os.path.join(carpeta_resultados, nombre_archivo), index=False)
+
+        return "ok"
+
+    except Exception as e:
+        print(f"Error procesando cuenca {ruta_principal}: {e}")
+        return f"error: {e}"
+def hacer_trabajo_actual():
+    ruta_trabajo = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//trabajo_actual.csv"
+    ruta_cuencas = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas_a_estudiar_2.csv"
+    carpeta_cuencas = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
+
+    # Crear archivo trabajo_actual.csv si no existe
+    if not os.path.exists(ruta_trabajo):
+        df_vacio = pd.DataFrame(columns=["Serie_principal", "Serie_secundaria", "resultado"])
+        df_vacio.to_csv(ruta_trabajo, index=False)
+
+    # Leer archivos
+    df_trabajo = pd.read_csv(ruta_trabajo)
+    df_cuencas = pd.read_csv(ruta_cuencas)
+
+    for _, fila in df_cuencas.iterrows():
+        Serie_principal = int(fila["Serie_principal"])
+        Serie_secundaria = int(fila["Serie_secundaria"])
+
+        # Saltar si ya fue procesada
+        print(df_trabajo.head())
+        ya_hecho = ((df_trabajo["Serie_principal"] == Serie_principal) & 
+                    (df_trabajo["Serie_secundaria"] == Serie_secundaria)).any()
+        if ya_hecho:
+            print(f"Saltando cuenca {Serie_principal}-{Serie_secundaria}, ya procesada.")
+            continue
+
+        area_principal = float(fila["area_principal"])
+        area_secundaria = float(fila["area_secundaria"])
+
+        ruta_principal = os.path.join(carpeta_cuencas, f"{Serie_principal}.csv")
+        ruta_secundaria = os.path.join(carpeta_cuencas, f"{Serie_secundaria}.csv")
+
+        resultados = procesar_cuenca(ruta_principal, ruta_secundaria, area_principal, area_secundaria)
+
+        nueva_fila = {
+            "Serie_principal": Serie_principal,
+            "Serie_secundaria": Serie_secundaria,
+            "resultado": str(resultados)[:1000]
+        }
+        df_trabajo = pd.concat([df_trabajo, pd.DataFrame([nueva_fila])], ignore_index=True)
+        df_trabajo.to_csv(ruta_trabajo, index=False)

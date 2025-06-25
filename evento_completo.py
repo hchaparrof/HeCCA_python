@@ -4,15 +4,16 @@ class EventoCompleto:
     Reune todas las caracteristicas del evento como
     magnitud, intensidad, etc. también reune el evento en sí en un df.
     """
-  mes = -1  # es el mes en que se encuentra el evento, no existen eventos multimensuales
-  magnitud = -1.0  # la suma de los caudales excedentes al umbral del evento, m3/s
-  intensidad = -1.0  # magnitud del evento sobre la duracion m3/(s*día)
-  duracion = -1  # duracion en días del evento (día)
+
 
   def __init__(self, df1: pd.DataFrame, umbral: float, umbralstr: str):
     self.df1: pd.DataFrame = df1.copy()
     self.umbral: float = umbral
     self.umbralstr: str = umbralstr
+    self.mes = -1  # es el mes en que se encuentra el evento, no existen eventos multimensuales
+    self.magnitud = -1.0  # la suma de los caudales excedentes al umbral del evento, m3/s
+    self.intensidad = -1.0  # magnitud del evento sobre la duracion m3/(s*día)
+    self.duracion = -1  # duracion en días del evento (día)
     self.organizar_df()
     self.set_intensidad()
     self.organizar_mes()

@@ -8,21 +8,19 @@ import IhaEstado
 
 class EstadoAlgoritmo:
   def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int):
-    self.ruta = ruta_m
-    self.data = data_inicial
-    self.data_alter = pd.DataFrame()
+    self.ruta: str = ruta_m
+    self.data: pd.DataFrame = data_inicial
+    self.data_alter: pd.DataFrame = pd.DataFrame()
     self.df2: pd.DataFrame = pd.DataFrame()
     self.primer_dia = 1
     self.dif = 1
     self.final_dia = 1
-    self.str_apoyo = "normal"
-    self.df_month_mean = pd.DataFrame()
-    self.df_month_mean_rev = pd.DataFrame()
-    # self.dist_prob: int = -1
+    self.str_apoyo: str = "normal"
+    self.df_month_mean: pd.DataFrame = pd.DataFrame()
+    self.df_month_mean_rev: pd.DataFrame = pd.DataFrame()
     self.ajuste: int = -1
     self.anio_hidrologico: int = anio_hidrologico
     self.codigo_est: int = codigo_est
-    # self.preparacion_comun()
 
   def preparacion_comun(self, *args):
     from funciones_anla import determinar_ajuste
@@ -89,6 +87,7 @@ class EstadoIdeam(EstadoAlgoritmo):
       'QTQ': h_umbrales[1]
     }
     self.porcentajes = np.empty(12)
+    #todo revisar porcentajes
     self.preparacion_comun()
 
   def preparacion_comun(self):
@@ -123,7 +122,7 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
   anios_retorn: list = [2, 5, 10, 25]
-  def __init__(self, data_inicial, ruta_m: str, anio_hidrologico: int, codigo_est: int):
+  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int):
     super().__init__(data_inicial, ruta_m, anio_hidrologico, codigo_est)
     self.data_ref: pd.DataFrame = pd.DataFrame()
     self.propuesta_inicial_ref: list[float] = [0] * 12

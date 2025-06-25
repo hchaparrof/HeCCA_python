@@ -80,7 +80,7 @@ def formato_fecha(datos: pd.DataFrame) -> tuple[int, Optional[str]]:
 		segundo = str_month
 		tercero = str_day
 	return 0, primero + separador[0] + segundo + separador[1] + tercero + excedente
-
+	
 
 def datos_anomalos(df: pd.DataFrame, retirar_anomalos: bool = True) -> pd.DataFrame:
 	""" Recibe el dataframe de trabajo ordenado, con huecos y datos anomalos y devuelve el dataframe de trabajo """

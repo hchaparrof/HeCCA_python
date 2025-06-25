@@ -134,16 +134,19 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
     datos['anio_hidrologico'] = det_anio_hid(base)
   objeto_base: list[estado_algoritmo.EstadoAlgoritmo] = crear_objeto_estado(df_limpio, datos, codigo_est)
 
-  if datos["existencia_enso"]:
-    if len(objeto_base) == 2:
-      return (crear_lista(objeto_base[0], datos['archivos']['archivo_enso']) +
-              crear_lista(objeto_base[1], datos['archivos']['archivo_enso']))
-    elif len(objeto_base) == 1:
-      return crear_lista(objeto_base[0], datos['archivos']['archivo_enso'])
-    else:
-      return None
+  if not datos.get("existencia_enso"):
+    return objeto_base
 
-  return objeto_base
+  lista_anla = []
+  lista_ideam = []
+
+  for obj in objeto_base:
+    if isinstance(obj, estado_algoritmo.EstadoAnla):
+      lista_anla = crear_lista(obj, datos['archivos']['archivo_enso'])
+    elif isinstance(obj, estado_algoritmo.EstadoIdeam):
+      lista_ideam = crear_lista(obj, datos['archivos']['archivo_enso'])
+
+  return (lista_anla, lista_ideam)
 
 
 def generar_algoritmo_json() -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:

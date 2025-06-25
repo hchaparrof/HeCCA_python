@@ -5,6 +5,7 @@ import pandas as pd
 
 
 class IhaEstado:
+
   def __init__(self, data_real: Optional[pd.DataFrame]):
     self.grupo_1 = 1
     self.grupo_2 = 1
@@ -15,12 +16,6 @@ class IhaEstado:
     self.data: Optional[pd.DataFrame] = None
     self.start_year = None
     self.end_year = None
-
-  def __eq__(self, other):
-    pass
-
-  def __ne__(self, other):
-    return not self.__eq__(other)
 
   def unir_grupos(elemento):
     df_unido = pd.concat(

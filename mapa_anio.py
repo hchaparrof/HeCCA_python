@@ -6,7 +6,7 @@ from shapely.geometry import Point
 SHAPEFILE_PATH = "disuelto_anio_hidrologico.gpkg"  # Ruta al archivo .shp
 ATTRIBUTE_NAME = "gridcode"  # Nombre del atributo a extraer
 
-def det_anio_hid(df: pd.DataFrame) -> int:
+def det_anio_hid(df: pd.DataFrame) -> int: 
     """
     Determina el atributo asociado al punto con latitud y longitud mínima del DataFrame.
 
