@@ -92,7 +92,6 @@ def Iha_parameter3(data, start_year, end_year):
 	return armar_df((Group3_IHA.mean(axis=1), Group3_IHA.std(axis=1)))
 
 
-# return Group3_IHA.mean(axis=1)
 
 
 """Frecuencia y duración de pulsos altos y bajos de caudal
