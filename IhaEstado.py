@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import ClassVar, List, Optional
 
 import iha_parametros as ih
 import pandas as pd
 
 
 class IhaEstado:
-
+  iha_grupos: ClassVar[List[int] | int] = [3,4,5]
   def __init__(self, data_real: Optional[pd.DataFrame]):
     self.grupo_1 = 1
     self.grupo_2 = 1
@@ -17,16 +17,26 @@ class IhaEstado:
     self.start_year = None
     self.end_year = None
 
-  def unir_grupos(elemento):
-    df_unido = pd.concat(
-      [elemento.grupo_1, elemento.grupo_2, elemento.grupo_3, elemento.grupo_4,
-       elemento.grupo_5], axis=0, ignore_index=True)
-    return df_unido
+  def __eq__(self, other):
+    pass
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def unir_grupos(self):
+    lista_grupos = []
+    for i in IhaEstado.iha_grupos:
+      grupo = getattr(self, f'grupo_{i}', None)
+      if grupo is not None:
+        lista_grupos.append(grupo)
+    return pd.concat(lista_grupos, axis=0, ignore_index=True)
+
 
   def __sub__(self, other) -> list:
+    # Todo gestinar lo de la resta
     if isinstance(other, IhaEstado):
-      base = IhaEstado.unir_grupos(self)
-      otro = IhaEstado.unir_grupos(other)
+      base = self.unir_grupos()
+      otro = other.unir_grupos()
       serie_resultado: pd.Series = ((base['Valor'] - otro['Valor']).abs()) / base['std']
       return serie_resultado.to_list()
     return NotImplemented
@@ -34,7 +44,7 @@ class IhaEstado:
   def __truediv__(self, otro):
     if isinstance(otro, IhaEstado):
       base = IhaEstado(None)
-      base.grupo_1 = self.grupo_1/otro.grupo_1
+      base.grupo_1 = self.grupo_1 / otro.grupo_1
       base.grupo_2 = self.grupo_2 / otro.grupo_2
       base.grupo_3 = self.grupo_3 / otro.grupo_3
       base.grupo_4 = self.grupo_4 / otro.grupo_4
@@ -54,10 +64,6 @@ class IhaEstado:
 
   def calcular_iha(self):
     self.data, self.start_year, self.end_year = ih.set_data(self.data_cruda)
-    # print("prueba_cambio")
-    # self.start_year = self.data.index.year.min()
-    # self.end_year = self.data.index.year.max()
-    # print(self.start_year, self.end_year)
     self.grupo_1 = ih.Iha_parameter1(self.data, self.start_year, self.end_year)
     self.grupo_2 = ih.Iha_parameter2(self.data, self.start_year, self.end_year)
     self.grupo_3 = ih.Iha_parameter3(self.data, self.start_year, self.end_year)

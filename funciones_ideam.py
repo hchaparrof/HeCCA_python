@@ -82,10 +82,10 @@ def umbrales_serie(estado: EstadoIdeam, cambiar_umbrales: bool = True) -> None:
         if data_max is None:
             data_max = (anio_hidrologico(estado.data, estado.anio_hidrologico)).groupby([estado.data.index.year, estado.data.index.month]).max()
     
-    q10 = caud_retor(data_min, ajuste, 10)
-    qtq = caud_retor(data_min, ajuste, u_qtq)
-    q15 = caud_retor(data_max, ajuste, 15)
-    qb = caud_retor(data_max, ajuste, u_qb)
+    q10 = caud_retor(data_min, ajuste, 10, True)
+    qtq = caud_retor(data_min, ajuste, u_qtq, True)
+    q15 = caud_retor(data_max, ajuste, 15, False)
+    qb = caud_retor(data_max, ajuste, u_qb, False)
     
     # Si hay umbrales históricos, usarlos en lugar de recalcular
     qb = estado.h_umbrales['QB'] if estado.h_umbrales['QB'] is not None else qb
@@ -272,11 +272,11 @@ def df_eventos(df_objetivo: pd.DataFrame, lista_eventos: Iterable) -> pd.DataFra
   con los datos de mes magnitud, etc. para luego poder acceder a ellos más fácil
   """
   # set columns
-  df_objetivo = df_objetivo.assign(mes=None, Magnitud=None, Intensidad=None, Duracion=None)
+  df_objetivo = df_objetivo.assign(mes=None, Magnitud=None, Intensidad=None, Duracion=None, Inicio=None)
   # calculate mim, max, mean, min_rev and mean_rev
   for j in range(len(lista_eventos)):
     # filtro los datos por año y mes para hacer el analisis
-    row = [lista_eventos[j].mes, lista_eventos[j].magnitud, lista_eventos[j].intensidad, lista_eventos[j].duracion]
+    row = [lista_eventos[j].mes, lista_eventos[j].magnitud, lista_eventos[j].intensidad, lista_eventos[j].duracion, lista_eventos[j].df1.index.min()]
     df_objetivo.loc[len(df_objetivo)] = row
   return df_objetivo
 
@@ -397,6 +397,8 @@ def org_alt(estado: EstadoIdeam) -> None:
   # ###
   df_qtq_alt = pd.DataFrame()
   df_qb_alt = pd.DataFrame()
+  df_q15_alt = pd.DataFrame()
+  df_q10_alt = pd.DataFrame()
   df_qtq_alt.assign(mes=None, Magnitud=None, Duracion=None, Intensidad=None)
   df_qb_alt.assign(mes=None, Magnitud=None, Duracion=None, Intensidad=None)
   eventos_rev_qtr15.clear()
@@ -414,6 +416,8 @@ def org_alt(estado: EstadoIdeam) -> None:
   estado.listas_eventos['eventos_rev_q10'] = eventos_rev_q10
   df_qtq_alt = df_eventos(df_qtq_alt, eventos_rev_qtq)
   df_qb_alt = df_eventos(df_qb_alt, eventos_rev_qb)
+  df_q15_alt = df_eventos(df_q15_alt, eventos_rev_qtr15)
+  df_q10_alt = df_eventos(df_q10_alt, eventos_rev_q10)
   estado.df_umbrales['df_qtq_alt'] = df_qtq_alt
   estado.df_umbrales['df_qb_alt'] = df_qb_alt
 
@@ -547,6 +551,8 @@ def prin_func(estado: EstadoIdeam) -> tuple[pd.DataFrame, pd.DataFrame]:
   contar_eventos(estado, data, 'event_Q10', estado.listas_eventos['eventos_q10'], 'event_Q10', estado.umbrales['Q10'])
   estado.df_umbrales['df_qtq_ref'] = df_eventos(estado.df_umbrales['df_qtq_ref'], estado.listas_eventos['eventos_qtq'])
   estado.df_umbrales['df_qb_ref'] = df_eventos(estado.df_umbrales['df_qb_ref'], estado.listas_eventos['eventos_qb'])
+  estado.df_umbrales['df_q10_ref'] = df_eventos(estado.df_umbrales['df_q10_ref'], estado.listas_eventos['eventos_q10'])
+  estado.df_umbrales['df_q15_ref'] = df_eventos(estado.df_umbrales['df_q15_ref'], estado.listas_eventos['eventos_qtr15'])
   formar_alter(estado)
   org_alt(estado)
   #print(cumple(estado, estado.df_umbrales['df_qtq_ref'], estado.df_umbrales['df_qtq_alt'], i) and cumple(estado, estado.df_umbrales['df_qb_ref'], estado.df_umbrales['df_qb_alt'], i))

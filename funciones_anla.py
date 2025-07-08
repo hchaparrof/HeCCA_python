@@ -39,14 +39,17 @@ def determinar_ajuste(estado: estado_algoritmo.EstadoAlgoritmo) -> None:
 	estado.ajuste = ajuste_seleccionado
 
 
-def caud_retor(data: pd.DataFrame, ajuste: int, tiempo_ret: float) -> float:
+def caud_retor(data: pd.DataFrame, ajuste: int, tiempo_ret: float, minimo: bool) -> float:
 	df = data
 	array_valor = df['Valor'].to_numpy()
 	if not np.all(np.isfinite(array_valor)):
 		raise ValueError("array_valor contiene valores no finitos: ", array_valor)
 	ajuste_seleccionado = ajuste
 	tiempo_retorno = tiempo_ret
-	prob_ret = 1 - (1 / tiempo_retorno)
+	if minimo:
+		prob_ret = 1/tiempo_retorno
+	else:
+		prob_ret = 1 - (1 / tiempo_retorno)
 	if ajuste_seleccionado == 1:
 		mun, stdn = norm.fit(array_valor)
 		return norm.ppf(prob_ret, loc=mun, scale=stdn)
@@ -188,8 +191,8 @@ def calc_resultados(datos: pd.DataFrame, ajuste: int, debug_flag: bool = False) 
 	resultados_iha: IhaEstado = IhaEstado(datos)
 	resultados_iha.calcular_iha()
 	resultados: estado_algoritmo.ResultadosAnla = estado_algoritmo.ResultadosAnla(cdc=cdc, cdc_anios=cdc_anios,
-																																								caud_return=anios_retorno,
-																																								iah_result=resultados_iha)
+																			   caud_return=anios_retorno,
+																			   iah_result=resultados_iha)
 	if debug_flag:
 		pass  # print(resultados, "resultados_iha")
 	return resultados

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import ClassVar, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -70,7 +70,11 @@ class EstadoIdeam(EstadoAlgoritmo):
       'df_qtq_alt': pd.DataFrame(),
       'df_qtq_ref': pd.DataFrame(),
       'df_qb_alt': pd.DataFrame(),
-      'df_qb_ref': pd.DataFrame()
+      'df_qb_ref': pd.DataFrame(),
+      'df_q15_ref': pd.DataFrame(),
+      'df_q15_alt': pd.DataFrame(),
+      'df_q10_ref': pd.DataFrame(),
+      'df_q10_alt': pd.DataFrame()
     }
     self.listas_eventos = {
       'eventos_rev_qtr15': [],
@@ -122,8 +126,12 @@ class EstadoIdeam(EstadoAlgoritmo):
 class EstadoAnla(EstadoAlgoritmo):
   cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
   anios_retorn: list = [2, 5, 10, 25]
-  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int):
+  def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int, grupos_iha: List[int] | int):
     super().__init__(data_inicial, ruta_m, anio_hidrologico, codigo_est)
+    if grupos_iha == -1:
+      self.grupos_a_analizar = [3,4,5]
+    else: 
+      self.grupos_a_analizar = grupos_iha
     self.data_ref: pd.DataFrame = pd.DataFrame()
     self.propuesta_inicial_ref: list[float] = [0] * 12
     self.caud_final: list[float] = [0] * 12
@@ -160,3 +168,4 @@ class ResultadosAnla:
   cdc_anios: np.ndarray
   caud_return: list[float]
   iah_result: IhaEstado.IhaEstado
+  grupos_iha: ClassVar[List[int] | int]

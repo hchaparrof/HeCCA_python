@@ -1,7 +1,8 @@
 import json
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 import pandas as pd
+import IhaEstado
 import estado_algoritmo
 from limpieza_datos import process_df, ErrorFecha
 import copy
@@ -46,13 +47,20 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -
   @return: list[estado_algoritmo.EstadoAlgoritmo] una lista de 1 o 2 elementos EstadoAlgoritmo, ya sea EstadoAnla, EstadoIdeam o
   """
   objetos_estado: List[estado_algoritmo.EstadoAlgoritmo] = []
+  print(datos['organismo'], 'organismo')
+  organismo = datos.get('organismo')
+
+  if organismo not in {'anla', 'ideam', 'ambas'}:
+    print("Error: el valor de 'organismo' no es válido. Debe ser 'anla', 'ideam' o 'ambas'.")
+    return None
   if datos['organismo'] != 'ideam':
     objetos_estado.append(
       estado_algoritmo.EstadoAnla(
         df_limpio,
         datos['archivos']['archivo_base'],
         datos['anio_hidrologico'],
-        codigo_est
+        codigo_est,
+        datos['grupos_iha']
       )
     )
 
@@ -103,15 +111,6 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -
                                      extremos=extremos, codigo_est=codigo_est))  # ['archivos']['archivo_base'], datos['umbrales']))
     else:
       objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos, codigo_est=codigo_est))
-  else:
-    print("error: no se entiende el procedimiento a escoger")
-    return None
-  # elif datos['organismo'] == 'ambas':
-    # Crear objeto para 'anla'
-  #  objetos_estado.append(estado_algoritmo.EstadoAnla(df_limpio, datos['archivos']['archivo_base'],datos['anio_hidrologico'], codigo_est=codigo_est))
-    # Crear objeto para 'ideam'
-  #  objetos_estado.append(estado_algoritmo.EstadoIdeam(df_limpio, datos,codigo_est=codigo_est))
-
   return objetos_estado
 
 
@@ -122,6 +121,11 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
   @return: Optional[list[estado_algoritmo.EstadoAlgoritmo]] lista de las instancias del algoritmo a ejecutar,
     pueden ser desde 1 hasta 6 elementos en la lista
   """
+  print(datos)
+  if datos['grupos_iha'] == -1:
+    IhaEstado.iha_grupos = [3,4,5]
+  elif isinstance(datos['grupos_iha'], Iterable):
+    IhaEstado.iha_grupos = datos['grupos_iha']
   base: pd.DataFrame = pd.read_csv(datos['archivos']['archivo_base'])
   # print(datos)
   apoyo: Optional[pd.DataFrame] = pd.read_csv(datos['archivos']['archivo_apoyo']) if (datos['archivos']['archivo_apoyo'] != -1) else None

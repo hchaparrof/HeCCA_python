@@ -23,7 +23,8 @@ diccionario_espejo: dict = {
   "estacion_hidrologica": "Nombre_de_la_estacion",
   "organismo": "ideam",
   "revision_iha": -1,
-  "anio_hidrologico": -1
+  "anio_hidrologico": -1,
+  "grupos_iha": -1
 }
 estaciones = []
 resultados = []
@@ -36,14 +37,14 @@ def procesar_estacion(ruta_archivo):
     diccionario_local = copy.deepcopy(diccionario_espejo)
     diccionario_local["archivos"]["archivo_base"] = ruta_archivo
 
-    try:
-        objetos:Optional[list[estado_algoritmo.EstadoAlgoritmo]] = generar_algoritmo(diccionario_espejo)
-        print(objetos)
-        resultados_locales = ejecutar_bloque(objetos)
-        return resultados_locales
-    except Exception as e:
-        print(f"Error procesando {ruta_archivo}: {e}")
-        return []
+    
+    objetos:Optional[list[estado_algoritmo.EstadoAlgoritmo]] = generar_algoritmo(diccionario_espejo)
+    print(objetos, "algo")
+    resultados_locales = ejecutar_bloque(objetos)
+    return resultados_locales
+    # except Exception as e:
+    #    print(f"Error procesando {ruta_archivo}: {e}")
+    #    return []
 def main_2():
     return procesar_estacion("C://Users//ASUS//Desktop//datos//unal//semillero//repo_hecca//est_12027050.csv")
 def guardar_datos(objeto_resultado: estado_algoritmo.EstadoAlgoritmo):
@@ -96,43 +97,84 @@ def procesar_cuenca(ruta_principal: str, ruta_secundaria: str,
     dicc_local["areas"] = [area_principal, area_secundaria]
     
 
-    try:
-        objetos: Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]] = generar_algoritmo(dicc_local)
-        print("objetos", objetos, type(objetos))
-        if objetos is None or not objetos[1]:
-            print(f"No se generaron resultados válidos para {ruta_principal}")
-            return "sin_resultado"
+    
+    objetos: Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]] = generar_algoritmo(dicc_local)
+    print("objetos", objetos, type(objetos))
+    if objetos is None:
+        print(f"No se generaron resultados válidos para {ruta_principal}")
+        return "sin_resultado"
 
-        ideam_objs = objetos[1]
-        cuenca_nombre = os.path.basename(ruta_principal).replace(".csv", "")
+    ideam_objs = objetos[1]
+    cuenca_nombre = os.path.basename(ruta_principal).replace(".csv", "")
 
-        for ideam in ideam_objs:
-            ideam.principal_funcion()
-            str_apoyo = ideam.str_apoyo or "sin_nombre"
-            carpeta_resultados = f"C://Users//ASUS//Desktop//datos//unal//trabajo de grado//resultados//{str_apoyo}"
-            os.makedirs(carpeta_resultados, exist_ok=True)
+    for ideam in ideam_objs:
+        ideam.principal_funcion()
+        str_apoyo = ideam.str_apoyo or "sin_nombre"
+        carpeta_resultados = f"C://Users//ASUS//Desktop//datos//unal//trabajo de grado//resultados//ideam//{str_apoyo}"
+        os.makedirs(carpeta_resultados, exist_ok=True)
+        print(ideam.anio_hidrologico, "anio_hidrologico", cuenca_nombre)
+        print(ideam.ajuste, "ajuste", cuenca_nombre)
+        # Guardar los datos
+        ideam.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=False)
+        ideam.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=False)
 
-            # Guardar los datos
-            ideam.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=False)
-            ideam.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=False)
+        # Umbrales simples
+        df_umbrales_csv = pd.DataFrame(list(ideam.umbrales.items()), columns=["umbral", "valor"])
+        df_umbrales_csv.to_csv(os.path.join(carpeta_resultados, f"umbrales_{cuenca_nombre}.csv"), index=False)
 
-            # Umbrales simples
-            df_umbrales_csv = pd.DataFrame(list(ideam.umbrales.items()), columns=["umbral", "valor"])
-            df_umbrales_csv.to_csv(os.path.join(carpeta_resultados, f"umbrales_{cuenca_nombre}.csv"), index=False)
+        # Umbrales DataFrame
+        for nombre, df in ideam.df_umbrales.items():
+            if not df.empty:
+                nombre_archivo = f"{nombre}_{cuenca_nombre}.csv"
+                df.to_csv(os.path.join(carpeta_resultados, nombre_archivo), index=False)
+    anla_objs = objetos[0]
+    cuenca_nombre = os.path.basename(ruta_principal).replace(".csv", "")
 
-            # Umbrales DataFrame
-            for nombre, df in ideam.df_umbrales.items():
-                if not df.empty:
-                    nombre_archivo = f"{nombre}_{cuenca_nombre}.csv"
-                    df.to_csv(os.path.join(carpeta_resultados, nombre_archivo), index=False)
+    for anla in anla_objs:
+        anla.principal_funcion()
+        str_apoyo = anla.str_apoyo or "sin_nombre"
+        carpeta_resultados = f"C://Users//ASUS//Desktop//datos//unal//trabajo de grado//resultados//anla//otros//{str_apoyo}"
+        os.makedirs(carpeta_resultados, exist_ok=True)
+        anla.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=False)
+        anla.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=False)
+        # Exportar DataFrames principales
+        anla.data_ref.to_csv(os.path.join(carpeta_resultados, f"data_ref_{cuenca_nombre}.csv"), index=False)
+        anla.df_cdc_normal.to_csv(os.path.join(carpeta_resultados, f"df_cdc_normal_{cuenca_nombre}.csv"), index=False)
+        anla.df_cdc_alterada.to_csv(os.path.join(carpeta_resultados, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=False)
+        anla.data_alter2.to_csv(os.path.join(carpeta_resultados, f"data_alter2_{cuenca_nombre}.csv"), index=False)
 
-        return "ok"
+        # Exportar listas como CSV de una columna
+        listas_exportables = {
+            "propuesta_inicial_ref": anla.propuesta_inicial_ref,
+            "caud_final": anla.caud_final,
+            "q95": anla.q95,
+            "q7_10": anla.q7_10,
+            "cdc_normales": anla.cdc_normales,
+            "cdc_alterados": anla.cdc_alterados,
+            "caud_return_normal": anla.caud_return_normal,
+            "caud_return_alterado": anla.caud_return_alterado
+        }
 
-    except Exception as e:
-        print(f"Error procesando cuenca {ruta_principal}: {e}")
-        return f"error: {e}"
+        for nombre, lista in listas_exportables.items():
+            df = pd.DataFrame(lista, columns=[nombre])
+            df.to_csv(os.path.join(carpeta_resultados, f"{nombre}_{cuenca_nombre}.csv"), index=False)
+
+        # Exportar resultados si tienen DataFrames
+        for etiqueta, resultado in {
+            "ori": anla.resultados_ori,
+            "alterada": anla.resultados_alterada,
+            "ref": anla.resultados_ref
+        }.items():
+            if resultado and hasattr(resultado, 'df'):
+                resultado.df.to_csv(os.path.join(carpeta_resultados, f"resultado_{etiqueta}_{cuenca_nombre}.csv"), index=False)
+
+    return "ok"
+    # except Exception as e:
+    #     print(f"Error procesando cuenca {ruta_principal}: {e}")
+    #     return f"error: {e}"
+    
 def hacer_trabajo_actual():
-    ruta_trabajo = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//trabajo_actual.csv"
+    ruta_trabajo = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//trabajo_actual_ideam_4.csv"
     ruta_cuencas = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas_a_estudiar_2.csv"
     carpeta_cuencas = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
 
@@ -172,3 +214,48 @@ def hacer_trabajo_actual():
         }
         df_trabajo = pd.concat([df_trabajo, pd.DataFrame([nueva_fila])], ignore_index=True)
         df_trabajo.to_csv(ruta_trabajo, index=False)
+import os
+import pandas as pd
+
+def exportar_anla(objetos, ruta_principal):
+    anla_objs = objetos[0]
+    cuenca_nombre = os.path.basename(ruta_principal).replace(".csv", "")
+
+    for anla in anla_objs:
+        anla.principal_funcion()
+        str_apoyo = anla.str_apoyo or "sin_nombre"
+        carpeta_resultados = f"C://Users//ASUS//Desktop//datos//unal//trabajo de grado//resultados//anla//{str_apoyo}"
+        os.makedirs(carpeta_resultados, exist_ok=True)
+
+        # Exportar DataFrames principales
+        anla.data_ref.to_csv(os.path.join(carpeta_resultados, f"data_ref_{cuenca_nombre}.csv"), index=False)
+        anla.df_cdc_normal.to_csv(os.path.join(carpeta_resultados, f"df_cdc_normal_{cuenca_nombre}.csv"), index=False)
+        anla.df_cdc_alterada.to_csv(os.path.join(carpeta_resultados, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=False)
+        anla.data_alter2.to_csv(os.path.join(carpeta_resultados, f"data_alter2_{cuenca_nombre}.csv"), index=False)
+
+        # Exportar listas como CSV de una columna
+        listas_exportables = {
+            "propuesta_inicial_ref": anla.propuesta_inicial_ref,
+            "caud_final": anla.caud_final,
+            "q95": anla.q95,
+            "q7_10": anla.q7_10,
+            "cdc_normales": anla.cdc_normales,
+            "cdc_alterados": anla.cdc_alterados,
+            "caud_return_normal": anla.caud_return_normal,
+            "caud_return_alterado": anla.caud_return_alterado
+        }
+
+        for nombre, lista in listas_exportables.items():
+            df = pd.DataFrame(lista, columns=[nombre])
+            df.to_csv(os.path.join(carpeta_resultados, f"{nombre}_{cuenca_nombre}.csv"), index=False)
+
+        # Exportar resultados si tienen DataFrames
+        for etiqueta, resultado in {
+            "ori": anla.resultados_ori,
+            "alterada": anla.resultados_alterada,
+            "ref": anla.resultados_ref
+        }.items():
+            if resultado and hasattr(resultado, 'df'):
+                resultado.df.to_csv(os.path.join(carpeta_resultados, f"resultado_{etiqueta}_{cuenca_nombre}.csv"), index=False)
+
+    return "ok"
