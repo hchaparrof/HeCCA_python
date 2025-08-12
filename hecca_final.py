@@ -2,7 +2,7 @@
 
 import pandas as pd
 import ingreso_datos
-import funciones_anla
+# import funciones_anla
 import estado_algoritmo
 from typing import Optional
 
@@ -24,7 +24,9 @@ def ejecutar_funcion(objeto: estado_algoritmo.EstadoAlgoritmo) -> estado_algorit
   print("hola")
   return objeto
 
-def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) -> Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]]:
+
+def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]]) ->\
+        Optional[tuple[list[estado_algoritmo.EstadoAnla], list[estado_algoritmo.EstadoIdeam]]]:
   if instancia_algoritmo is None:
     return None
   print("hola_1")
@@ -44,10 +46,11 @@ def ejecutar_bloque(instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAl
       array_anla.append(obj)
   return array_anla, array_ideam
 
+
 def main():
-  instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = ingreso_datos.ejecutar_algoritmo_ruta("setup.json")  
+  instancia_algoritmo: Optional[list[estado_algoritmo.EstadoAlgoritmo]] = (ingreso_datos.ejecutar_algoritmo_ruta("setup.json"))
   resultados = ejecutar_bloque(instancia_algoritmo)
-  if resultados == None:
+  if not resultados:
     print("Error en el proceso")
     return 
   else:

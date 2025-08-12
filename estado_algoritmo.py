@@ -7,6 +7,7 @@ import IhaEstado
 
 
 class EstadoAlgoritmo:
+
   def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int):
     self.ruta: str = ruta_m
     self.data: pd.DataFrame = data_inicial
@@ -124,8 +125,8 @@ class EstadoIdeam(EstadoAlgoritmo):
 
 
 class EstadoAnla(EstadoAlgoritmo):
-  cdc_umbrales: list = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
-  anios_retorn: list = [2, 5, 10, 25]
+  cdc_umbrales: List = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
+  anios_retorn: List = [2, 5, 10, 25]
   def __init__(self, data_inicial: pd.DataFrame, ruta_m: str, anio_hidrologico: int, codigo_est: int, grupos_iha: List[int] | int):
     super().__init__(data_inicial, ruta_m, anio_hidrologico, codigo_est)
     if grupos_iha == -1:
@@ -168,4 +169,4 @@ class ResultadosAnla:
   cdc_anios: np.ndarray
   caud_return: list[float]
   iah_result: IhaEstado.IhaEstado
-  grupos_iha: ClassVar[List[int] | int]
+  # grupos_iha: ClassVar[List[int] | int]

@@ -5,7 +5,8 @@ import pandas as pd
 
 
 class IhaEstado:
-  iha_grupos: ClassVar[List[int] | int] = [3,4,5]
+  iha_grupos: ClassVar[List[int] | int] = [3, 4, 5]
+
   def __init__(self, data_real: Optional[pd.DataFrame]):
     self.grupo_1 = 1
     self.grupo_2 = 1
@@ -30,7 +31,6 @@ class IhaEstado:
       if grupo is not None:
         lista_grupos.append(grupo)
     return pd.concat(lista_grupos, axis=0, ignore_index=True)
-
 
   def __sub__(self, other) -> list:
     # Todo gestinar lo de la resta

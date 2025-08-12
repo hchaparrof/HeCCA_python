@@ -2,7 +2,7 @@ from collections.abc import Sequence, Iterable
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+# from scipy.optimize import minimize
 from scipy.stats import norm, gumbel_r, pearson3, weibull_min
 
 import estado_algoritmo
@@ -54,9 +54,7 @@ def caud_retor(data: pd.DataFrame, ajuste: int, tiempo_ret: float, minimo: bool)
 		mun, stdn = norm.fit(array_valor)
 		return norm.ppf(prob_ret, loc=mun, scale=stdn)
 	elif ajuste_seleccionado == 2:
-		# pln = lognorm.fit(df['Valor'])
-		# return lognorm.ppf(prob_ret, pln[2], pln[2], pln[0])
-		pass
+		return -1.0
 	elif ajuste_seleccionado == 3:
 		mug, beta = gumbel_r.fit(array_valor)
 		return gumbel_r.ppf(prob_ret, loc=mug, scale=beta)
@@ -68,16 +66,16 @@ def caud_retor(data: pd.DataFrame, ajuste: int, tiempo_ret: float, minimo: bool)
 		return weibull_min.ppf(prob_ret, shape, loc, scale)
 	else:
 		return -1.0
-	pass
+
 
 def calc_caud_retor_2_(df: pd.DataFrame, tiempo_ret: int) -> float:
-	'''
+	"""
 
 	@param df: serie de caudal
 	@param tiempo_ret:
 	@return: caudal calculado para el tiempo de retorno
 	@deprecated
-	'''
+	"""
 	# len(df['Valor'])
 	array_valor: np.ndarray = df['Valor'].to_numpy()
 	mun, stdn = norm.fit(df['Valor'])
@@ -159,7 +157,7 @@ def calcular_7q10(df_completo: pd.DataFrame, ajuste: int) -> list:
 		meses[i - 1] = promedio_7_dias[promedio_7_dias.index.month == i].dropna()
 	q_710s: list = [0] * 12
 	for i, x in enumerate(meses):
-		q_710s[i] = caud_retor(x, ajuste, 10)
+		q_710s[i] = caud_retor(x, ajuste, 10, False)
 	return q_710s
 
 
@@ -170,7 +168,7 @@ def calcular_q95(estado: estado_algoritmo.EstadoAnla):
 	for i in range(1, 13):
 		meses[i - 1] = estado.data[estado.data.index.month == i]
 	for i, x in enumerate(meses):
-		q95s[i] = caud_retor(x, ajuste, 95)
+		q95s[i] = caud_retor(x, ajuste, 95, False)
 	return q95s
 
 
@@ -214,7 +212,7 @@ def calc_alterado(data: pd.DataFrame, ajuste: int, caudales: list) -> tuple[pd.D
 def caud_retorn_anla(df: pd.DataFrame, ajuste: int, anios: list) -> list[float]:
 	resultado: list = [0] * len(anios)
 	for i, anio in enumerate(anios):
-		resultado[i] = caud_retor(df, ajuste, anio)
+		resultado[i] = caud_retor(df, ajuste, anio, False)
 	return resultado
 
 
@@ -364,7 +362,7 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> None:
 	# calculo estado referencia
 	estado.data_ref, estado.resultados_ref = calc_alterado(estado.data, estado.ajuste, estado.propuesta_inicial_ref)
 
-	def funcion_objetivo(caudal_propuesto) -> float:
+	def funcion_objetivo(caudal_propuesto) -> tuple[float]:
 		"""
     Función objetivo que calcula el costo para un conjunto dado de caudales.
     """

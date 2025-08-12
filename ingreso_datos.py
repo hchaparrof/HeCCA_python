@@ -22,7 +22,7 @@ def ejecutar_algoritmo_ruta(ruta_json: str) -> Optional[list[estado_algoritmo.Es
 
 
 def procesar_datos(base: pd.DataFrame, apoyo: Optional[pd.DataFrame] = None,
-                   areas: Optional[list] = None) -> Optional[pd.DataFrame]:
+                   areas: Optional[list] = None, anios_utiles: Optional[List[int]] = None) -> Optional[pd.DataFrame]:
   """
   toma las series de base y apoyo y retorna un df limpio sin datos faltantes, ni anomalos.
   @param base: (pd.DataFrame) serie de datos a análiza
@@ -31,14 +31,14 @@ def procesar_datos(base: pd.DataFrame, apoyo: Optional[pd.DataFrame] = None,
   @return: df limpio con la serie a análizar
   """
   try:
-    df_limpio = process_df(base, apoyo, areas)
+    df_limpio = process_df(base, apoyo, areas, anios_utiles)
   except ErrorFecha as e:
     print(e)
     return None
   return df_limpio
 
 
-def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
+def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -> Optional[List[estado_algoritmo.EstadoAlgoritmo]]:
   """
 
   @param df_limpio: serie de datos sin datos faltantes.
@@ -69,7 +69,7 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -
     minimo_prov = None
     maximo_prov = None
     if datos['archivos']['archivo_maximos'] == -1 and datos['archivos']['archivo_minimos'] == -1:
-      extremos = [pd.DataFrame, pd.DataFrame]
+      extremos = [pd.DataFrame(), pd.DataFrame()]
     else:
       if datos['archivos']['archivo_maximos'] != -1:
         try:
@@ -114,7 +114,7 @@ def crear_objeto_estado(df_limpio: pd.DataFrame, datos: dict, codigo_est: int) -
   return objetos_estado
 
 
-def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
+def generar_algoritmo(datos: dict) -> Optional[tuple[Optional[list[estado_algoritmo.EstadoAnla]], Optional[list[estado_algoritmo.EstadoIdeam]]]]:
   """
   Toma un diccionario valido de configuración y retorna una lista de instancias del algoritmo a ejecutar
   @param datos:
@@ -126,23 +126,27 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
     IhaEstado.iha_grupos = [3,4,5]
   elif isinstance(datos['grupos_iha'], Iterable):
     IhaEstado.iha_grupos = datos['grupos_iha']
+  anios_utiles = None if datos['anios_utiles'] == -1 else datos['anios_no_utilos']
   base: pd.DataFrame = pd.read_csv(datos['archivos']['archivo_base'])
   # print(datos)
   apoyo: Optional[pd.DataFrame] = pd.read_csv(datos['archivos']['archivo_apoyo']) if (datos['archivos']['archivo_apoyo'] != -1) else None
   areas: List[float] = datos['areas'] if (datos['areas'] != -1) else None
   codigo_est: int = base['CodigoEstacion'].min()
-  df_limpio: Optional[pd.DataFrame] = procesar_datos(base, apoyo, areas)
+  df_limpio: Optional[pd.DataFrame] = procesar_datos(base, apoyo, areas, anios_utiles)
+  print(set(df_limpio.index.year))
   if df_limpio is None:
     return None
   if datos['anio_hidrologico'] == -1:
     datos['anio_hidrologico'] = det_anio_hid(base)
-  objeto_base: list[estado_algoritmo.EstadoAlgoritmo] = crear_objeto_estado(df_limpio, datos, codigo_est)
+  objeto_base: List[estado_algoritmo.EstadoIdeam | estado_algoritmo.EstadoAnla] = crear_objeto_estado(df_limpio, datos, codigo_est)
 
   if not datos.get("existencia_enso"):
-    return objeto_base
+    if isinstance(objeto_base, estado_algoritmo.EstadoIdeam):
+      return None, objeto_base
+    return objeto_base, None
 
-  lista_anla = []
-  lista_ideam = []
+  lista_anla: List[estado_algoritmo.EstadoAnla] = []
+  lista_ideam: List[estado_algoritmo.EstadoIdeam] = []
 
   for obj in objeto_base:
     if isinstance(obj, estado_algoritmo.EstadoAnla):
@@ -150,7 +154,7 @@ def generar_algoritmo(datos: dict) -> Optional[list[estado_algoritmo.EstadoAlgor
     elif isinstance(obj, estado_algoritmo.EstadoIdeam):
       lista_ideam = crear_lista(obj, datos['archivos']['archivo_enso'])
 
-  return (lista_anla, lista_ideam)
+  return lista_anla, lista_ideam
 
 
 def generar_algoritmo_json() -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]:
@@ -183,7 +187,7 @@ def generar_algoritmo_json() -> Optional[list[estado_algoritmo.EstadoAlgoritmo]]
     return [objeto_base]
 
 
-def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list[estado_algoritmo.EstadoAlgoritmo]:
+def crear_lista(estado: estado_algoritmo.EstadoAlgoritmo, enso_csv: str) -> list[estado_algoritmo.ResultadosAnla | estado_algoritmo.EstadoIdeam]:
   meses_list = [
     'DJF',
     'JFM',

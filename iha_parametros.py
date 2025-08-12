@@ -32,7 +32,7 @@ def set_data(data):
 	return data, start_year, end_year
 
 
-def Iha_parameter1(data, start_year, end_year):  # paramétrico
+def Iha_parameter1(data, start_year, end_year) -> pd.DataFrame:  # paramétrico
 	"""Parametros Grupo_1 calculo de la media a partir de los caudales diarios para los 12 meses de cada año"""
 	# from datetime import datetime, timedelta
 	agrupados = data.groupby(['Year', 'Month'])
@@ -46,7 +46,7 @@ def Iha_parameter1(data, start_year, end_year):  # paramétrico
 	e.rename(columns={'mean': 'Valor'}, inplace=True)
 	return e
 
-def Iha_parameter2(data, start_year, end_year):
+def Iha_parameter2(data, start_year, end_year) -> pd.DataFrame:
 	"""Parametros Grupo_2 calcula la magnitud y duración de caudales anuales extremos,
   determina el caudal anual minimo y maximo para diferentes duraciones (1 dia, 3 dias, 7 dias, 30 dias y 90 dias)
   Se inicializa un dataframe para guardar los parametros"""
@@ -72,7 +72,7 @@ def Iha_parameter2(data, start_year, end_year):
 	return armar_df((Group2_IHA.mean(axis=1), Group2_IHA.std(axis=1)))
 
 
-def Iha_parameter3(data, start_year, end_year):
+def Iha_parameter3(data, start_year, end_year) -> pd.DataFrame:
 	"""Fecha de ocurrencia de los caudales extremos Grupo 3 parametros IHA """
 	columns = [f'Year_{year}' for year in range(start_year, end_year + 1)]
 	"""Se inicializa el dataframe para guardar los parametros"""
@@ -108,7 +108,7 @@ def get_pulse_duration(indices):
 	return pulse_ends - pulse_starts
 
 
-def Iha_parameter4(data, start_year, end_year):  # no paramétrico
+def Iha_parameter4(data, start_year, end_year) -> pd.DataFrame:  # no paramétrico
 	""""Calcular los percentiles (25th,50th,75th)"""
 	percentiles = np.percentile(data['Valor'].dropna(), [25, 50, 75])
 	"""Se inicializa el dataframe para guardar los parámetros """
@@ -135,7 +135,7 @@ def Iha_parameter4(data, start_year, end_year):  # no paramétrico
 	return armar_df((Group4_IHA.mean(axis=1), Group4_IHA.std(axis=1)))
 
 
-def Iha_parameter5(data):
+def Iha_parameter5(data) -> pd.DataFrame:
 	"""Tasa y frecuencia de cambios en las condiciones hidrologicas
   Se inicializa el dataframe para guardar los parametros"""
 	Group5_IHA = pd.DataFrame()
