@@ -105,7 +105,7 @@ class EstadoIdeam(EstadoAlgoritmo):
     # print("principal funcion_ideam")
     import funciones_ideam
     funciones_ideam.prin_func(self)
-    self.to_csv()
+    # self.to_csv()
 
   def setear_umbrales(self, f_umbrales: list):
     self.umbrales['QTR15'] = f_umbrales[0]
@@ -153,7 +153,7 @@ class EstadoAnla(EstadoAlgoritmo):
     # print("princial_funcion_anla")
     from funciones_anla import prin_func
     prin_func(self)
-    self.to_csv()
+    # self.to_csv()
 
   def actualizar_caudal(self):
     self.data_alter = self.data.copy()

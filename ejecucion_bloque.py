@@ -66,7 +66,7 @@ def guardar_datos(objeto_resultado: estado_algoritmo.EstadoAlgoritmo):
 
 if __name__ == "__main___3":
     main_2()
-if __name__ == "__main__":
+if __name__ == "__main___4":
     estaciones = [
         os.path.join(RUTAESTACIONES, archivo)
         for archivo in os.listdir(RUTAESTACIONES)
@@ -184,15 +184,15 @@ def procesar_cuenca(ruta_principal: str, ruta_secundaria: str,
     #     return f"error: {e}"
 
 
-def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, ruta: str) -> None:
+def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, carpeta_resultados: str) -> None:
     str_apoyo = resultado.str_apoyo or "sin_nombre"
     cuenca_nombre = resultado.codigo_est
-    carpeta_resultados = os.path.join(ruta, str_apoyo)
+    carpeta_resultados = os.path.join(carpeta_resultados, str_apoyo)
     os.makedirs(carpeta_resultados, exist_ok=True)
     # Guardar los datos
     resultado.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
     resultado.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
-    graficar_caud_amb(resultado.data_alter, resultado.data, ruta, f"Caudal_ambiental_{resultado.str_apoyo}", resultado.umbrales)
+    graficar_caud_amb(resultado.data_alter, resultado.data, carpeta_resultados, f"Caudal_ambiental_{resultado.str_apoyo}", resultado.umbrales)
     # Umbrales simples
     df_umbrales_csv = pd.DataFrame(list(resultado.umbrales.items()), columns=["umbral", "valor"])
     df_umbrales_csv.to_csv(os.path.join(carpeta_resultados, f"umbrales_{cuenca_nombre}.csv"), index=True)
@@ -204,32 +204,30 @@ def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, ruta: str) -
             df.to_csv(os.path.join(carpeta_resultados, nombre_archivo), index=True)
     return None
 
-def export_instancia_anla(resultado: estado_algoritmo.EstadoAnla, ruta: str):
-    def export_resultados_anla_2(resultados_anla, cuenca_nombre, ruta: str):
-        pass
-    str_apoyo = resultado.str_apoyo or "sin_nombre"
-    cuenca_nombre = resultado.codigo_est
+def export_instancia_anla(resultado_general: estado_algoritmo.EstadoAnla, ruta: str):
+    str_apoyo = resultado_general.str_apoyo or "sin_nombre"
+    cuenca_nombre = resultado_general.codigo_est
     carpeta_resultados = os.path.join(ruta, str_apoyo)
     os.makedirs(carpeta_resultados, exist_ok=True)
-    resultado.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
-    resultado.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
-    graficar_caud_amb(resultado.data, resultado.data_alter, ruta, f"Caudal_ambiental_{resultado.str_apoyo}", None)
+    resultado_general.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
+    graficar_caud_amb(resultado_general.data, resultado_general.data_alter, ruta, f"Caudal_ambiental_{resultado_general.str_apoyo}", None)
     # Exportar DataFrames principales
-    resultado.data_ref.to_csv(os.path.join(carpeta_resultados, f"data_ref_{cuenca_nombre}.csv"), index=True)
-    resultado.df_cdc_normal.to_csv(os.path.join(carpeta_resultados, f"df_cdc_normal_{cuenca_nombre}.csv"), index=True)
-    resultado.df_cdc_alterada.to_csv(os.path.join(carpeta_resultados, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=True)
-    resultado.data_alter2.to_csv(os.path.join(carpeta_resultados, f"data_alter2_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_ref.to_csv(os.path.join(carpeta_resultados, f"data_ref_{cuenca_nombre}.csv"), index=True)
+    resultado_general.df_cdc_normal.to_csv(os.path.join(carpeta_resultados, f"df_cdc_normal_{cuenca_nombre}.csv"), index=True)
+    resultado_general.df_cdc_alterada.to_csv(os.path.join(carpeta_resultados, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_alter2.to_csv(os.path.join(carpeta_resultados, f"data_alter2_{cuenca_nombre}.csv"), index=True)
 
     # Exportar listas como CSV de una columna
     listas_exportables = {
-        "propuesta_inicial_ref": resultado.propuesta_inicial_ref,
-        "caud_final": resultado.caud_final,
-        "q95": resultado.q95,
-        "q7_10": resultado.q7_10,
-        "cdc_normales": resultado.cdc_normales,
-        "cdc_alterados": resultado.cdc_alterados,
-        "caud_return_normal": resultado.caud_return_normal,
-        "caud_return_alterado": resultado.caud_return_alterado
+        "propuesta_inicial_ref": resultado_general.propuesta_inicial_ref,
+        "caud_final": resultado_general.caud_final,
+        "q95": resultado_general.q95,
+        "q7_10": resultado_general.q7_10,
+        "cdc_normales": resultado_general.cdc_normales,
+        "cdc_alterados": resultado_general.cdc_alterados,
+        "caud_return_normal": resultado_general.caud_return_normal,
+        "caud_return_alterado": resultado_general.caud_return_alterado
     }
 
     for nombre, lista in listas_exportables.items():
@@ -238,9 +236,9 @@ def export_instancia_anla(resultado: estado_algoritmo.EstadoAnla, ruta: str):
 
     # Exportar resultados si tienen DataFrames
     for etiqueta, resultado in {
-        "ori": resultado.resultados_ori,
-        "alterada": resultado.resultados_alterada,
-        "ref": resultado.resultados_ref
+        "ori": resultado_general.resultados_ori,
+        "alterada": resultado_general.resultados_alterada,
+        "ref": resultado_general.resultados_ref
     }.items():
         if resultado is not None:
             # Exportar el DataFrame principal (cdc)
@@ -262,8 +260,8 @@ def export_instancia_anla(resultado: estado_algoritmo.EstadoAnla, ruta: str):
             )
     ruta_nat = os.path.join(ruta, 'iha','natural')
     ruta_alt = os.path.join(ruta, 'iha', 'alterado')
-    exportar_anla_creado.exportar_iha_real(resultado.resultados_ref, ruta_nat)
-    exportar_anla_creado.exportar_iha_real(resultado.resultados_alterada, ruta_alt)
+    exportar_anla_creado.exportar_iha_real(resultado_general.resultados_ori.iah_result, ruta_nat)
+    exportar_anla_creado.exportar_iha_real(resultado_general.resultados_alterada.iah_result, ruta_alt)
 
 def export_resultados_ideam(resultados_ideam: Optional[List[estado_algoritmo.EstadoIdeam]], ruta: str) -> int:
     if resultados_ideam is None:
@@ -327,6 +325,7 @@ def graficar_caud_amb(natural, alterado, ruta, titulo, umbrales: Optional[List] 
         titulo   (str): Título de la gráfica.
     """
     # Crear figura con proporción 2.2:1
+    os.makedirs(ruta, exist_ok=True)
     ruta = os.path.join(ruta, "caud_amb.png")
     fig, ax = plt.subplots(figsize=(11, 5), dpi=300)  # 11/5 ≈ 2.2
 
@@ -337,11 +336,16 @@ def graficar_caud_amb(natural, alterado, ruta, titulo, umbrales: Optional[List] 
     # Dibujar umbrales
     colores_umbral = ["green", "orange", "purple", "brown"]
     nombres_umbral = ["Q15", "QB", "QTQ", "Q10"]  # puedes cambiarlos
+    print(umbrales)
     if umbrales is not None:
-        for i, valor in enumerate(umbrales):
-            ax.axhline(y=valor, color=colores_umbral[i % len(colores_umbral)],
-                       linestyle="--", linewidth=0.8, label=f"{nombres_umbral[i]} = {valor:.2f}")
-
+        for i, (nombre, valor) in enumerate(umbrales.items()):
+            ax.axhline(
+                y=valor,
+                color=colores_umbral[i % len(colores_umbral)],
+                linestyle="--",
+                linewidth=0.8,
+                label=f"{nombre} = {valor:.2f}"
+            )
     # Leyenda y etiquetas
     ax.set_ylabel("Caudal (m³/s)")
     ax.set_xlabel("Fecha")
@@ -356,29 +360,70 @@ def graficar_caud_amb(natural, alterado, ruta, titulo, umbrales: Optional[List] 
 
     # Guardar imagen
     plt.tight_layout()
-    os.makedirs(ruta, exist_ok=True)
     plt.savefig(ruta, dpi=300)
     plt.close()
 
 
 def export_compilado(resultados: Optional[List[estado_algoritmo.EstadoAlgoritmo]], ruta: str, umbrales: Optional[list] = None) -> None:
     ruta = os.path.join(ruta, "compilado")
+    os.makedirs(ruta, exist_ok=True)
+
+    # Unir DataFrames de cada resultado
     df_naturales = [objeto.data for objeto in resultados]
     df_alterados = [objeto.data_alter2 for objeto in resultados]
-    archivo_mads_natural = unir_df(df_naturales)
-    archivo_mads_alterado = unir_df(df_alterados)
-    graficar_caud_amb(archivo_mads_natural, archivo_mads_alterado, ruta, titulo="Caudal_ambiental", umbrales=umbrales)
-    cdc_mads_natural: pd.DataFrame = funciones_anla.generar_cdc(archivo_mads_natural)    # para lo de IHA
-    iha_mads_natural: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_mads_natural)
+    archivo_natural = unir_df(df_naturales)
+    archivo_alterado = unir_df(df_alterados)
+    archivo_natural.to_csv(os.path.join(ruta, "natural.csv"))
+    archivo_alterado.to_csv(os.path.join(ruta, "alterado.csv"))
+    # Graficar comparación de caudales
+    graficar_caud_amb(
+        archivo_natural,
+        archivo_alterado,
+        ruta,
+        titulo="Caudal_ambiental",
+        umbrales=umbrales
+    )
+
+    # ===== NATURAL =====
+    ruta_nat = os.path.join(ruta, "natural")
+    os.makedirs(ruta_nat, exist_ok=True)
+
+    cdc_mads_natural: pd.DataFrame = funciones_anla.generar_cdc(archivo_natural)
+    iha_mads_natural: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_natural)
     iha_mads_natural.calcular_iha()
-    #ruta_mads_resultados: str = os.path.join(resultados_mads, str(cuenca))
-    ruta_mads_cdc: str = os.path.join(ruta, 'cdc_natural.csv')
-    os.makedirs(os.path.dirname(ruta_mads_cdc), exist_ok=True)
-    cdc_mads_natural.to_csv(ruta_mads_cdc, index=True)
-    exportar_anla_creado.exportar_iha_real(iha_mads_natural, ruta)
-    cdc_mads_alterado: pd.DataFrame = funciones_anla.generar_cdc(archivo_mads_alterado)
-    iha_mads_alterado: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_mads_alterado)
+
+    ruta_mads_cdc_nat: str = os.path.join(ruta_nat, 'cdc_natural.csv')
+    cdc_mads_natural.to_csv(ruta_mads_cdc_nat, index=True)
+    exportar_anla_creado.exportar_iha_real(iha_mads_natural, ruta_nat)
+
+    # ===== ALTERADO =====
+    ruta_alt = os.path.join(ruta, "alterado")
+    os.makedirs(ruta_alt, exist_ok=True)
+
+    cdc_mads_alterado: pd.DataFrame = funciones_anla.generar_cdc(archivo_alterado)
+    iha_mads_alterado: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_alterado)
     iha_mads_alterado.calcular_iha()
+
+    ruta_mads_cdc_alt: str = os.path.join(ruta_alt, 'cdc_alterado.csv')
+    cdc_mads_alterado.to_csv(ruta_mads_cdc_alt, index=True)
+    exportar_anla_creado.exportar_iha_real(iha_mads_alterado, ruta_alt)
+    # ruta = os.path.join(ruta, "compilado")
+    # df_naturales = [objeto.data for objeto in resultados]
+    # df_alterados = [objeto.data_alter2 for objeto in resultados]
+    # archivo_natural = unir_df(df_naturales)
+    # archivo_alterado = unir_df(df_alterados)
+    # graficar_caud_amb(archivo_natural, archivo_alterado, ruta, titulo="Caudal_ambiental", umbrales=umbrales)
+    # cdc_mads_natural: pd.DataFrame = funciones_anla.generar_cdc(archivo_natural)    # para lo de IHA
+    # iha_mads_natural: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_natural)
+    # iha_mads_natural.calcular_iha()
+    # #ruta_mads_resultados: str = os.path.join(resultados_mads, str(cuenca))
+    # ruta_mads_cdc: str = os.path.join(ruta, 'cdc_natural.csv')
+    # os.makedirs(os.path.dirname(ruta_mads_cdc), exist_ok=True)
+    # cdc_mads_natural.to_csv(ruta_mads_cdc, index=True)
+    # exportar_anla_creado.exportar_iha_real(iha_mads_natural, ruta)
+    # cdc_mads_alterado: pd.DataFrame = funciones_anla.generar_cdc(archivo_alterado)
+    # iha_mads_alterado: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_alterado)
+    # iha_mads_alterado.calcular_iha()
 
 
 
@@ -410,9 +455,9 @@ def ejecutar_cuenca_completa(diccionario: dict) -> None:
             instancia.principal_funcion()
     resultados_ideam = resultados[1]
     resultados_anla = resultados[0]
-    ruta_exportar = diccionario["ruta_exportar"]
+    ruta_exportar = diccionario["ruta_carpeta_salida"]
     nombre_estacion = resultados_ideam[0].codigo_est
-    ruta_exportar = os.path.join(ruta_exportar, nombre_estacion)
+    ruta_exportar = os.path.join(ruta_exportar, str(nombre_estacion))
     export_resultados_ideam(resultados_ideam, ruta_exportar)
     export_resultados_anla(resultados_anla, ruta_exportar)
 
@@ -420,8 +465,8 @@ def ejecutar_cuenca_completa(diccionario: dict) -> None:
 
 def hacer_trabajo_actual():
     ruta_trabajo: str = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//trabajo_actual_ideam_4.csv"
-    ruta_cuencas: str = "C://Users//ASUS//Desktop//datos//unal//semillero//CAUDAL//resultados"
-    carpeta_cuencas: str  = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
+    # ruta_cuencas: str = "C://Users//ASUS//Desktop//datos//unal//semillero//CAUDAL//resultados"
+    ruta_cuencas: str  = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
     ruta_anios: str = "C://Users//ASUS//Desktop//datos//unal//semillero//consistencia//Consistencia"
     lista_numeros: list[tuple[int, str]] = []
     for carpeta_raiz, carpetas, archivos in os.walk(ruta_cuencas):
@@ -439,9 +484,8 @@ def hacer_trabajo_actual():
     # Leer archivos
     df_trabajo = pd.read_csv(ruta_trabajo)
     # df_cuencas = pd.read_csv(ruta_cuencas)
-    resultados_export = []
     for nombre, ruta in lista_numeros:
-        ruta_anios_utiles = os.path.join(ruta_anios, f"Resumen_{nombre}.csv")
+        ruta_anios_utiles = os.path.join(ruta_anios, f"Resumen_{nombre}.xls")
         datos = list(pd.read_excel(ruta_anios_utiles, sheet_name="RESULTADOS_GRAFICADOS")['Año'])
         if len(datos) > 0:
             diccionario_espejo['anios_utiles'] = datos
@@ -453,37 +497,7 @@ def hacer_trabajo_actual():
         }
         df_trabajo = pd.concat([df_trabajo, pd.DataFrame([nueva_fila])], ignore_index=True)
         df_trabajo.to_csv(ruta_trabajo, index=False)
-    df_cuencas = pd.DataFrame()
-    for _, fila in df_cuencas.iterrows():
-        Serie_principal = int(fila["Serie_principal"])
-        Serie_secundaria = int(fila["Serie_secundaria"])
-
-        # Saltar si ya fue procesada
-        print(df_trabajo.head())
-        ya_hecho = ((df_trabajo["Serie_principal"] == Serie_principal) & 
-                    (df_trabajo["Serie_secundaria"] == Serie_secundaria)).any()
-        if ya_hecho:
-            print(f"Saltando cuenca {Serie_principal}-{Serie_secundaria}, ya procesada.")
-            continue
-
-        area_principal = float(fila["area_principal"])
-        area_secundaria = float(fila["area_secundaria"])
-
-        ruta_principal = os.path.join(carpeta_cuencas, f"{Serie_principal}.csv")
-        ruta_secundaria = os.path.join(carpeta_cuencas, f"{Serie_secundaria}.csv")
-
-        resultados = procesar_cuenca(ruta_principal, ruta_secundaria, area_principal, area_secundaria)
-        resultados_export.append(resultados)
-        continue
-        nueva_fila = {
-            "Serie_principal": Serie_principal,
-            "Serie_secundaria": Serie_secundaria,
-            "resultado": str(resultados)[:1000]
-        }
-        df_trabajo = pd.concat([df_trabajo, pd.DataFrame([nueva_fila])], ignore_index=True)
-        df_trabajo.to_csv(ruta_trabajo, index=False)
-        return resultados
-    return resultados_export
+    # hasta aquí
 
 
 def exportardf_completo(caudales_array: List[pd.DataFrame]) -> Optional[pd.DataFrame]:

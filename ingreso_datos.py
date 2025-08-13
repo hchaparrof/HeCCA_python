@@ -126,7 +126,7 @@ def generar_algoritmo(datos: dict) -> Optional[tuple[Optional[list[estado_algori
     IhaEstado.iha_grupos = [3,4,5]
   elif isinstance(datos['grupos_iha'], Iterable):
     IhaEstado.iha_grupos = datos['grupos_iha']
-  anios_utiles = None if datos['anios_utiles'] == -1 else datos['anios_no_utilos']
+  anios_utiles = None if datos['anios_utiles'] == -1 else datos['anios_utiles']
   base: pd.DataFrame = pd.read_csv(datos['archivos']['archivo_base'])
   # print(datos)
   apoyo: Optional[pd.DataFrame] = pd.read_csv(datos['archivos']['archivo_apoyo']) if (datos['archivos']['archivo_apoyo'] != -1) else None

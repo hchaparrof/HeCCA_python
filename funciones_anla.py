@@ -436,7 +436,10 @@ def prin_func(estado: estado_algoritmo.EstadoAnla) -> None:
 def crear_df2(estado: estado_algoritmo.EstadoAnla, lista_caudales: list) -> None:
 	df = estado.data
 	estado.df2 = df.groupby(df.index.month).mean()
-	estado.df2['caud_aprov'] = pd.Series(lista_caudales, index=range(1, 13))
+	estado.df2['caud_aprov'] = np.maximum(
+		estado.df2['Valor'].to_numpy() - np.array(lista_caudales),
+		0
+	)
 	estado.df2['aprov'] = estado.df2['caud_aprov'] / estado.df2['Valor']
 
 def comparar_resultados(natural: estado_algoritmo.ResultadosAnla, alterado: estado_algoritmo.ResultadosAnla,
