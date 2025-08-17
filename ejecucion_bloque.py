@@ -192,7 +192,7 @@ def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, carpeta_resu
     # Guardar los datos
     resultado.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
     resultado.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
-    graficar_caud_amb(resultado.data_alter, resultado.data, carpeta_resultados, f"Caudal_ambiental_{resultado.str_apoyo}", resultado.umbrales)
+    graficar_caud_amb(resultado.data, resultado.data_alter, carpeta_resultados, f"Caudal_ambiental_{resultado.str_apoyo}", resultado.umbrales)
     # Umbrales simples
     df_umbrales_csv = pd.DataFrame(list(resultado.umbrales.items()), columns=["umbral", "valor"])
     df_umbrales_csv.to_csv(os.path.join(carpeta_resultados, f"umbrales_{cuenca_nombre}.csv"), index=True)
@@ -407,25 +407,6 @@ def export_compilado(resultados: Optional[List[estado_algoritmo.EstadoAlgoritmo]
     ruta_mads_cdc_alt: str = os.path.join(ruta_alt, 'cdc_alterado.csv')
     cdc_mads_alterado.to_csv(ruta_mads_cdc_alt, index=True)
     exportar_anla_creado.exportar_iha_real(iha_mads_alterado, ruta_alt)
-    # ruta = os.path.join(ruta, "compilado")
-    # df_naturales = [objeto.data for objeto in resultados]
-    # df_alterados = [objeto.data_alter2 for objeto in resultados]
-    # archivo_natural = unir_df(df_naturales)
-    # archivo_alterado = unir_df(df_alterados)
-    # graficar_caud_amb(archivo_natural, archivo_alterado, ruta, titulo="Caudal_ambiental", umbrales=umbrales)
-    # cdc_mads_natural: pd.DataFrame = funciones_anla.generar_cdc(archivo_natural)    # para lo de IHA
-    # iha_mads_natural: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_natural)
-    # iha_mads_natural.calcular_iha()
-    # #ruta_mads_resultados: str = os.path.join(resultados_mads, str(cuenca))
-    # ruta_mads_cdc: str = os.path.join(ruta, 'cdc_natural.csv')
-    # os.makedirs(os.path.dirname(ruta_mads_cdc), exist_ok=True)
-    # cdc_mads_natural.to_csv(ruta_mads_cdc, index=True)
-    # exportar_anla_creado.exportar_iha_real(iha_mads_natural, ruta)
-    # cdc_mads_alterado: pd.DataFrame = funciones_anla.generar_cdc(archivo_alterado)
-    # iha_mads_alterado: IhaEstado.IhaEstado = IhaEstado.IhaEstado(archivo_alterado)
-    # iha_mads_alterado.calcular_iha()
-
-
 
 
 def unir_df(caudales_array: List[pd.DataFrame]) -> Optional[pd.DataFrame]:
@@ -466,7 +447,7 @@ def ejecutar_cuenca_completa(diccionario: dict) -> None:
 def hacer_trabajo_actual():
     ruta_trabajo: str = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//trabajo_actual_ideam_4.csv"
     # ruta_cuencas: str = "C://Users//ASUS//Desktop//datos//unal//semillero//CAUDAL//resultados"
-    ruta_cuencas: str  = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
+    ruta_cuencas: str = "C://Users//ASUS//Desktop//datos//unal//trabajo de grado//cuencas//"
     ruta_anios: str = "C://Users//ASUS//Desktop//datos//unal//semillero//consistencia//Consistencia"
     lista_numeros: list[tuple[int, str]] = []
     for carpeta_raiz, carpetas, archivos in os.walk(ruta_cuencas):
