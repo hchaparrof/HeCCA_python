@@ -32,6 +32,7 @@ def anio_hidrologico(datos: pd.DataFrame, mes: int) -> pd.DataFrame:
     - Si el mes es 1 retorna el df sin cambiar.
     - El sistema asume que tu df empieza en enero
     """
+    datos = datos.copy()
     if mes == 1:
       return datos
     inicio: pd.Timestamp = datos.index.min()

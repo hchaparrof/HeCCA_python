@@ -138,6 +138,7 @@ def generar_algoritmo(datos: dict) -> Optional[tuple[Optional[list[estado_algori
     return None
   if datos['anio_hidrologico'] == -1:
     datos['anio_hidrologico'] = det_anio_hid(base)
+    print(f"anio hidrologico {datos['anio_hidrologico']}")
   objeto_base: List[estado_algoritmo.EstadoIdeam | estado_algoritmo.EstadoAnla] = crear_objeto_estado(df_limpio, datos, codigo_est)
 
   if not datos.get("existencia_enso"):

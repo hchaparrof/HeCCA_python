@@ -207,16 +207,16 @@ def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, carpeta_resu
 def export_instancia_anla(resultado_general: estado_algoritmo.EstadoAnla, ruta: str):
     str_apoyo = resultado_general.str_apoyo or "sin_nombre"
     cuenca_nombre = resultado_general.codigo_est
-    carpeta_resultados = os.path.join(ruta, str_apoyo)
-    os.makedirs(carpeta_resultados, exist_ok=True)
-    resultado_general.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
-    resultado_general.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
+    ruta = os.path.join(ruta, str_apoyo)
+    os.makedirs(ruta, exist_ok=True)
+    resultado_general.df2.to_csv(os.path.join(ruta, f"df2_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_alter.to_csv(os.path.join(ruta, f"data_alter_{cuenca_nombre}.csv"), index=True)
     graficar_caud_amb(resultado_general.data, resultado_general.data_alter, ruta, f"Caudal_ambiental_{resultado_general.str_apoyo}", None)
     # Exportar DataFrames principales
-    resultado_general.data_ref.to_csv(os.path.join(carpeta_resultados, f"data_ref_{cuenca_nombre}.csv"), index=True)
-    resultado_general.df_cdc_normal.to_csv(os.path.join(carpeta_resultados, f"df_cdc_normal_{cuenca_nombre}.csv"), index=True)
-    resultado_general.df_cdc_alterada.to_csv(os.path.join(carpeta_resultados, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=True)
-    resultado_general.data_alter2.to_csv(os.path.join(carpeta_resultados, f"data_alter2_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_ref.to_csv(os.path.join(ruta, f"data_ref_{cuenca_nombre}.csv"), index=True)
+    resultado_general.df_cdc_normal.to_csv(os.path.join(ruta, f"df_cdc_normal_{cuenca_nombre}.csv"), index=True)
+    resultado_general.df_cdc_alterada.to_csv(os.path.join(ruta, f"df_cdc_alterada_{cuenca_nombre}.csv"), index=True)
+    resultado_general.data_alter2.to_csv(os.path.join(ruta, f"data_alter2_{cuenca_nombre}.csv"), index=True)
 
     # Exportar listas como CSV de una columna
     listas_exportables = {
@@ -232,7 +232,7 @@ def export_instancia_anla(resultado_general: estado_algoritmo.EstadoAnla, ruta: 
 
     for nombre, lista in listas_exportables.items():
         df = pd.DataFrame(lista, columns=[nombre])
-        df.to_csv(os.path.join(carpeta_resultados, f"{nombre}_{cuenca_nombre}.csv"), index=True)
+        df.to_csv(os.path.join(ruta, f"{nombre}_{cuenca_nombre}.csv"), index=True)
 
     # Exportar resultados si tienen DataFrames
     for etiqueta, resultado in {
@@ -243,21 +243,28 @@ def export_instancia_anla(resultado_general: estado_algoritmo.EstadoAnla, ruta: 
         if resultado is not None:
             # Exportar el DataFrame principal (cdc)
             resultado.cdc.to_csv(
-                os.path.join(carpeta_resultados, f"resultado_{etiqueta}_cdc_{cuenca_nombre}.csv"),
+                os.path.join(ruta, f"resultado_{etiqueta}_cdc_{cuenca_nombre}.csv"),
                 index=True
             )
 
             # Exportar caudales de retorno
             pd.DataFrame(resultado.caud_return, columns=["caud_return"]).to_csv(
-                os.path.join(carpeta_resultados, f"resultado_{etiqueta}_caud_return_{cuenca_nombre}.csv"),
+                os.path.join(ruta, f"resultado_{etiqueta}_caud_return_{cuenca_nombre}.csv"),
                 index=True
             )
 
             # Exportar los años del cdc
             pd.DataFrame(resultado.cdc_anios, columns=["anio"]).to_csv(
-                os.path.join(carpeta_resultados, f"resultado_{etiqueta}_anios_{cuenca_nombre}.csv"),
+                os.path.join(ruta, f"resultado_{etiqueta}_anios_{cuenca_nombre}.csv"),
                 index=True
             )
+    if resultado_general.resultados_ori is not None and resultado_general.resultados_alterada is not None:
+        graficar_cdc(
+            resultado_general.resultados_ori.cdc,
+            resultado_general.resultados_alterada.cdc,
+            ruta,
+            titulo=f"CDC {cuenca_nombre} (Natural vs Alterada)",
+        )
     ruta_nat = os.path.join(ruta, 'iha','natural')
     ruta_alt = os.path.join(ruta, 'iha', 'alterado')
     exportar_anla_creado.exportar_iha_real(resultado_general.resultados_ori.iah_result, ruta_nat)
@@ -284,6 +291,8 @@ def graficar_cdc(natural, alterado, ruta, titulo):
         titulo   (str): Título de la gráfica.
     """
     # Umbrales de frecuencia
+    # ruta = os.path.join(ruta, "cdc.png")
+    os.makedirs(ruta, exist_ok=True)
     ruta = os.path.join(ruta, "cdc.png")
     cdc_umbrales = [0.70, 0.80, 0.90, 0.92, 0.95, 0.98, 0.99, 0.995]
 
