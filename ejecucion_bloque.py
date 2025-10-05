@@ -192,6 +192,10 @@ def export_instancia_ideam(resultado: estado_algoritmo.EstadoIdeam, carpeta_resu
     # Guardar los datos
     resultado.df2.to_csv(os.path.join(carpeta_resultados, f"df2_{cuenca_nombre}.csv"), index=True)
     resultado.data_alter.to_csv(os.path.join(carpeta_resultados, f"data_alter_{cuenca_nombre}.csv"), index=True)
+    nombre_archivo = os.path.join(carpeta_resultados, f"{cuenca_nombre}_ajuste.txt")
+    with open(nombre_archivo, "w", encoding="utf-8") as archivo:
+        texto = str(resultado.ajuste)
+        archivo.write(texto)
     graficar_caud_amb(resultado.data, resultado.data_alter, carpeta_resultados, f"Caudal_ambiental_{resultado.str_apoyo}", resultado.umbrales)
     # Umbrales simples
     df_umbrales_csv = pd.DataFrame(list(resultado.umbrales.items()), columns=["umbral", "valor"])
@@ -209,6 +213,10 @@ def export_instancia_anla(resultado_general: estado_algoritmo.EstadoAnla, ruta: 
     cuenca_nombre = resultado_general.codigo_est
     ruta = os.path.join(ruta, str_apoyo)
     os.makedirs(ruta, exist_ok=True)
+    nombre_archivo = os.path.join(ruta, f"{cuenca_nombre}_ajuste.txt")
+    with open(nombre_archivo, "w", encoding="utf-8") as archivo:
+        texto = str(resultado_general.ajuste)
+        archivo.write(texto)
     resultado_general.df2.to_csv(os.path.join(ruta, f"df2_{cuenca_nombre}.csv"), index=True)
     resultado_general.data_alter.to_csv(os.path.join(ruta, f"data_alter_{cuenca_nombre}.csv"), index=True)
     graficar_caud_amb(resultado_general.data, resultado_general.data_alter, ruta, f"Caudal_ambiental_{resultado_general.str_apoyo}", None)

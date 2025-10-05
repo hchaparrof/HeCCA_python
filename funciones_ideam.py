@@ -496,7 +496,7 @@ def org_df2_2(estado: EstadoIdeam, aprov: float, mes: int) -> None:
   """
   df2 = estado.df2
   df2.loc[df2.index.month == mes, '%_aprov'] = aprov
-  df2['Q_aprov'] = df2['Mean_rev'] * df2['%_aprov']
+  df2['Q_aprov'] = df2['Mean'] * df2['%_aprov']
   estado.df2 = df2
 
 
